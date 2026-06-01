@@ -1,0 +1,65 @@
+openapi: 3.1.0
+info:
+  title: AgentThat API
+  version: 0.1.0
+  description: Baseline tenant-aware APIs for AgentThat platform services.
+servers:
+  - url: https://api.agentthat.example.com
+security:
+  - bearerAuth: []
+paths:
+  /v1/health:
+    get:
+      summary: Service health check
+      operationId: getHealth
+      responses:
+        '200':
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+  /v1/tenants/{tenantId}/health:
+    get:
+      summary: Tenant-scoped readiness check
+      operationId: getTenantHealth
+      parameters:
+        - in: path
+          name: tenantId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Tenant healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantHealthResponse'
+        '400':
+          description: Invalid tenant id
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, service]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        service:
+          type: string
+    TenantHealthResponse:
+      type: object
+      required: [status, tenantId]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        tenantId:
+          type: string

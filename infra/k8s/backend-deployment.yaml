@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agentthat-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: agentthat-backend
+  template:
+    metadata:
+      labels:
+        app: agentthat-backend
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/prajwal2006/agentthat-backend:latest
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /v1/health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agentthat-backend
+spec:
+  selector:
+    app: agentthat-backend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
