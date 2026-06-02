@@ -13,11 +13,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AppLayout } from "@/components/app-layout";
 import { workflows } from "@/lib/mock-data";
 
 export default function WorkflowsPage() {
   return (
-    <div className="p-6 lg:p-8 space-y-8">
+    <AppLayout>
+      <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div className="space-y-2">
           <h1 className="text-4xl font-bold">Workflow Studio</h1>
@@ -137,6 +139,6 @@ export default function WorkflowsPage() {
           ))}
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }

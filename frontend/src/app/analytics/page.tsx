@@ -23,6 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AppLayout } from "@/components/app-layout";
 import { analyticsData } from "@/lib/mock-data";
 
 export default function AnalyticsPage() {
@@ -54,8 +55,9 @@ export default function AnalyticsPage() {
   ];
 
   return (
-    <div className="p-6 lg:p-8 space-y-8">
-      <div className="flex items-center justify-between">
+    <AppLayout>
+      <div className="space-y-8">
+        <div className="flex items-center justify-between">
         <div className="space-y-2">
           <h1 className="text-4xl font-bold">AI Adoption Analytics</h1>
           <p className="text-muted-foreground">
@@ -227,6 +229,7 @@ export default function AnalyticsPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </AppLayout>
   );
 }

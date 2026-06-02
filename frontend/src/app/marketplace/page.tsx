@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { AppLayout } from "@/components/app-layout";
 import { marketplaceItems } from "@/lib/mock-data";
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -36,7 +37,7 @@ export default function MarketplacePage() {
   ];
 
   return (
-    <div className="p-6 lg:p-8 space-y-8">
+    <AppLayout>
       <div className="space-y-2">
         <h1 className="text-4xl font-bold">AI Marketplace</h1>
         <p className="text-muted-foreground">
@@ -154,6 +155,6 @@ export default function MarketplacePage() {
           ))}
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
