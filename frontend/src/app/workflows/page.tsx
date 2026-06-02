@@ -5,13 +5,12 @@ import {
   Play,
   Pause,
   MoreHorizontal,
-  Calendar,
   Clock,
   Users,
   Workflow,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AppLayout } from "@/components/app-layout";
 import { workflows } from "@/lib/mock-data";
@@ -138,6 +137,7 @@ export default function WorkflowsPage() {
             </Card>
           ))}
         </div>
+      </div>
       </div>
     </AppLayout>
   );

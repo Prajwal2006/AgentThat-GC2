@@ -13,7 +13,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import {
-  Calendar,
   Download,
   TrendingUp,
   Users,
@@ -22,7 +21,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { AppLayout } from "@/components/app-layout";
 import { analyticsData } from "@/lib/mock-data";
 

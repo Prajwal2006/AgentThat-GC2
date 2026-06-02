@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import {
-  Plus,
   Wand2,
   Code,
   Sparkles,

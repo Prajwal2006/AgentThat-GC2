@@ -4,7 +4,6 @@ import {
   BookOpen,
   Award,
   Play,
-  MoreHorizontal,
   CheckCircle,
   Clock,
   Target,
