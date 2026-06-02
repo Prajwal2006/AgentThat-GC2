@@ -1,0 +1,222 @@
+export const dashboardStats = [
+  {
+    title: "Total Agents",
+    value: "24",
+    change: "+3 this month",
+    icon: "Zap",
+  },
+  {
+    title: "Active Workflows",
+    value: "12",
+    change: "+2 deployments",
+    icon: "Workflow",
+  },
+  {
+    title: "Team Members",
+    value: "8",
+    change: "All active",
+    icon: "Users",
+  },
+  {
+    title: "Avg. Efficiency",
+    value: "94%",
+    change: "+5% from last week",
+    icon: "TrendingUp",
+  },
+];
+
+export const recentActivity = [
+  {
+    id: "1",
+    type: "agent_created",
+    title: "Customer Support Agent",
+    description: "Created by Sarah Chen",
+    timestamp: "2 hours ago",
+    status: "active",
+  },
+  {
+    id: "2",
+    type: "workflow_deployed",
+    title: "Sales Lead Qualification",
+    description: "Deployed by Mike Johnson",
+    timestamp: "5 hours ago",
+    status: "success",
+  },
+  {
+    id: "3",
+    type: "agent_improved",
+    title: "Email Responder Agent",
+    description: "Prompt improved by AI Architect",
+    timestamp: "1 day ago",
+    status: "pending",
+  },
+  {
+    id: "4",
+    type: "marketplace_install",
+    title: "Installed: HR Onboarding Template",
+    description: "Installed by James Wilson",
+    timestamp: "2 days ago",
+    status: "success",
+  },
+];
+
+export const agents = [
+  {
+    id: "1",
+    name: "Customer Support Agent",
+    description: "Handles customer inquiries and resolves common issues",
+    status: "active",
+    usage: 2847,
+    created: "2 weeks ago",
+    category: "Support",
+  },
+  {
+    id: "2",
+    name: "Content Generator",
+    description: "Automatically creates marketing content and social posts",
+    status: "active",
+    usage: 1562,
+    created: "3 weeks ago",
+    category: "Marketing",
+  },
+  {
+    id: "3",
+    name: "Data Analyzer",
+    description: "Analyzes business metrics and generates reports",
+    status: "testing",
+    usage: 342,
+    created: "1 week ago",
+    category: "Analytics",
+  },
+  {
+    id: "4",
+    name: "Email Responder",
+    description: "Drafts professional email responses",
+    status: "inactive",
+    usage: 0,
+    created: "2 weeks ago",
+    category: "Communication",
+  },
+];
+
+export const workflows = [
+  {
+    id: "1",
+    name: "Sales Lead Pipeline",
+    description: "Research prospects, score leads, draft outreach",
+    agents: 3,
+    status: "active",
+    lastRun: "2 hours ago",
+  },
+  {
+    id: "2",
+    name: "Customer Onboarding",
+    description: "Collect info, assign tasks, generate reports",
+    agents: 4,
+    status: "active",
+    lastRun: "30 minutes ago",
+  },
+  {
+    id: "3",
+    name: "Content Production",
+    description: "Generate, edit, and schedule content",
+    agents: 2,
+    status: "testing",
+    lastRun: "1 day ago",
+  },
+];
+
+export const marketplaceItems = [
+  {
+    id: "1",
+    name: "Customer Support Agent",
+    creator: "AgentThat Team",
+    description: "Enterprise-ready customer support with knowledge base",
+    installs: 1240,
+    rating: 4.8,
+    category: "Support",
+    price: "Free",
+    icon: "MessageSquare",
+  },
+  {
+    id: "2",
+    name: "Sales Enablement Workflow",
+    creator: "RevOps Team",
+    description: "Complete sales pipeline automation",
+    installs: 892,
+    rating: 4.9,
+    category: "Sales",
+    price: "Free",
+    icon: "TrendingUp",
+  },
+  {
+    id: "3",
+    name: "HR Onboarding System",
+    creator: "People Ops Team",
+    description: "Automated employee onboarding workflow",
+    installs: 654,
+    rating: 4.7,
+    category: "HR",
+    price: "Free",
+    icon: "Users",
+  },
+  {
+    id: "4",
+    name: "Content Management Agent",
+    creator: "Marketing Team",
+    description: "AI-powered content creation and management",
+    installs: 521,
+    rating: 4.6,
+    category: "Marketing",
+    price: "Free",
+    icon: "FileText",
+  },
+];
+
+export const analyticsData = [
+  { month: "Jan", adoption: 32, efficiency: 78, savings: 2400 },
+  { month: "Feb", adoption: 45, efficiency: 82, savings: 3200 },
+  { month: "Mar", adoption: 58, efficiency: 85, savings: 4100 },
+  { month: "Apr", adoption: 71, efficiency: 88, savings: 5200 },
+  { month: "May", adoption: 84, efficiency: 91, savings: 6300 },
+  { month: "Jun", adoption: 95, efficiency: 94, savings: 7400 },
+];
+
+export const courses = [
+  {
+    id: "1",
+    title: "AI Fundamentals",
+    description: "Learn the basics of AI and how to use AgentThat",
+    duration: "2 hours",
+    lessons: 8,
+    completion: 100,
+    status: "completed",
+  },
+  {
+    id: "2",
+    title: "Prompt Engineering Mastery",
+    description: "Create powerful prompts that drive results",
+    duration: "3 hours",
+    lessons: 12,
+    completion: 65,
+    status: "in_progress",
+  },
+  {
+    id: "3",
+    title: "Building Multi-Agent Systems",
+    description: "Design and orchestrate complex workflows",
+    duration: "4 hours",
+    lessons: 15,
+    completion: 0,
+    status: "available",
+  },
+  {
+    id: "4",
+    title: "Advanced Optimization",
+    description: "Optimize agents and workflows for maximum performance",
+    duration: "3 hours",
+    lessons: 10,
+    completion: 0,
+    status: "available",
+  },
+];
