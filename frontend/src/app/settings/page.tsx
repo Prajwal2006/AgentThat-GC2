@@ -1,21 +1,16 @@
 "use client";
 
-import { Sidebar } from "@/components/sidebar";
-import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { AppLayout } from "@/components/app-layout";
 import { Bell, Shield, Users, Key } from "lucide-react";
 
 export default function SettingsPage() {
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar />
-      <main className="flex-1 lg:ml-0">
-        <Header />
-        
-        <div className="p-6 lg:p-8 space-y-8">
+    <AppLayout>
+      <div className="space-y-8">
           <div className="space-y-2">
             <h1 className="text-4xl font-bold">Settings</h1>
             <p className="text-muted-foreground">Manage your account and preferences</p>
@@ -165,8 +160,7 @@ export default function SettingsPage() {
               </Card>
             </div>
           </div>
-        </div>
-      </main>
-    </div>
+      </div>
+    </AppLayout>
   );
 }

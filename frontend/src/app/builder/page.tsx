@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { AppLayout } from "@/components/app-layout";
 
 export default function AgentBuilder() {
   const [mode, setMode] = useState<"select" | "manual" | "ai">("select");
@@ -23,7 +24,7 @@ export default function AgentBuilder() {
 
   if (mode === "select") {
     return (
-      <div className="p-6 lg:p-8 space-y-8">
+      <AppLayout>
         <div className="space-y-2">
           <h1 className="text-4xl font-bold">Agent Builder</h1>
           <p className="text-muted-foreground">
@@ -31,7 +32,7 @@ export default function AgentBuilder() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
           {/* Manual Mode */}
           <Card
             className="cursor-pointer hover:border-accent/50 transition-all hover:shadow-lg"
@@ -115,65 +116,50 @@ export default function AgentBuilder() {
                   Instant configuration
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <ArrowRight className="w-4 h-4" />
-                  Ready to deploy
+                  <Zap className="w-4 h-4" />
+                  Deploy in seconds
                 </div>
               </div>
-              <Button className="w-full mt-6 justify-between" variant="default">
-                Generate with AI
+              <Button className="w-full mt-6 justify-between">
+                Use AI Generation
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </CardContent>
           </Card>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
-  if (mode === "ai") {
+  if (mode === "manual") {
     return (
-      <div className="p-6 lg:p-8 space-y-8">
+      <AppLayout>
         <div className="space-y-2">
-          <h1 className="text-4xl font-bold">Create Agent with AI</h1>
+          <h1 className="text-4xl font-bold">Manual Agent Builder</h1>
           <p className="text-muted-foreground">
-            Describe your agent in natural language
+            Build your agent step-by-step
           </p>
         </div>
 
-        <Card>
+        <Card className="mt-8">
           <CardHeader>
-            <CardTitle>Describe Your Agent</CardTitle>
-            <CardDescription>
-              The more details you provide, the better the AI architect can design your agent
-            </CardDescription>
+            <CardTitle>Agent Configuration</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
               <label className="text-sm font-medium mb-2 block">Agent Name</label>
               <Input
-                placeholder="e.g., Customer Support Agent"
+                placeholder="Enter agent name"
                 value={agentName}
                 onChange={(e) => setAgentName(e.target.value)}
               />
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">
-                What should this agent do?
-              </label>
-              <textarea
-                className="w-full h-32 rounded-lg border border-border bg-secondary px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent"
-                placeholder="Example: Create a customer support agent that classifies tickets, searches our knowledge base, drafts responses, escalates urgent issues to humans, and updates our ticketing system."
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">
-                What tools and integrations does it need?
-              </label>
+              <label className="text-sm font-medium mb-2 block">Description</label>
               <textarea
                 className="w-full h-24 rounded-lg border border-border bg-secondary px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent"
-                placeholder="Example: Slack integration, Jira API, Knowledge base search, Email notifications"
+                placeholder="Describe what this agent does..."
               />
             </div>
 
@@ -185,70 +171,31 @@ export default function AgentBuilder() {
                   setAgentName("");
                 }}
               >
-                Cancel
+                Back
               </Button>
-              <Button className="flex-1 gap-2">
-                <Wand2 className="w-4 h-4" />
-                Generate Agent Architecture
-              </Button>
+              <Button className="flex-1">Save Agent</Button>
             </div>
           </CardContent>
         </Card>
-
-        {/* Preview Card */}
-        {agentName && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Generation Preview</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-4 rounded-lg bg-accent/10 border border-accent/20">
-                  <div className="text-xs text-muted-foreground mb-1">
-                    Agents
-                  </div>
-                  <div className="text-2xl font-bold">3</div>
-                </div>
-                <div className="p-4 rounded-lg bg-accent/10 border border-accent/20">
-                  <div className="text-xs text-muted-foreground mb-1">
-                    Integrations
-                  </div>
-                  <div className="text-2xl font-bold">2</div>
-                </div>
-                <div className="p-4 rounded-lg bg-accent/10 border border-accent/20">
-                  <div className="text-xs text-muted-foreground mb-1">
-                    Tools
-                  </div>
-                  <div className="text-2xl font-bold">5</div>
-                </div>
-                <div className="p-4 rounded-lg bg-accent/10 border border-accent/20">
-                  <div className="text-xs text-muted-foreground mb-1">
-                    Est. Cost
-                  </div>
-                  <div className="text-2xl font-bold">Low</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      </AppLayout>
     );
   }
 
+  // AI Mode
   return (
-    <div className="p-6 lg:p-8 space-y-8">
+    <AppLayout>
       <div className="space-y-2">
-        <h1 className="text-4xl font-bold">Create Agent Manually</h1>
+        <h1 className="text-4xl font-bold">Create Agent with AI</h1>
         <p className="text-muted-foreground">
-          Use the visual builder to create your agent step-by-step
+          Describe your agent in natural language
         </p>
       </div>
 
-      <Card>
+      <Card className="mt-8">
         <CardHeader>
-          <CardTitle>Agent Configuration</CardTitle>
+          <CardTitle>Describe Your Agent</CardTitle>
           <CardDescription>
-            Create a new AI agent with custom prompts, tools, and integrations
+            The more details you provide, the better the AI architect can design your agent
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -263,56 +210,12 @@ export default function AgentBuilder() {
 
           <div>
             <label className="text-sm font-medium mb-2 block">
-              System Prompt
+              What should this agent do?
             </label>
             <textarea
               className="w-full h-32 rounded-lg border border-border bg-secondary px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent"
-              placeholder="Define how your agent should behave, respond, and make decisions..."
+              placeholder="Example: Create a customer support agent that classifies tickets, searches our knowledge base, drafts responses, escalates urgent issues to humans..."
             />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Model</label>
-              <select className="w-full rounded-lg border border-border bg-secondary px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-accent">
-                <option>GPT-4 Turbo</option>
-                <option>GPT-4</option>
-                <option>Claude 3 Opus</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-2 block">
-                Temperature
-              </label>
-              <Input
-                type="number"
-                min="0"
-                max="1"
-                step="0.1"
-                defaultValue="0.7"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium mb-3 block">Tools</label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {["Web Search", "File Upload", "API Call", "Database Query", "Email", "Slack"].map(
-                (tool) => (
-                  <Button
-                    key={tool}
-                    variant="outline"
-                    className="justify-start"
-                    onClick={(e) => {
-                      e.currentTarget.classList.toggle("border-accent");
-                    }}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    {tool}
-                  </Button>
-                )
-              )}
-            </div>
           </div>
 
           <div className="flex gap-3">
@@ -325,10 +228,13 @@ export default function AgentBuilder() {
             >
               Cancel
             </Button>
-            <Button className="flex-1">Create Agent</Button>
+            <Button className="flex-1 gap-2">
+              <Wand2 className="w-4 h-4" />
+              Generate Agent Architecture
+            </Button>
           </div>
         </CardContent>
       </Card>
-    </div>
+    </AppLayout>
   );
 }
