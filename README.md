@@ -10,6 +10,7 @@ AgentThat is an enterprise-grade multi-tenant SaaS platform that helps non-techn
 - `openapi/agentthat-api.yaml` — API contract baseline
 - `backend/` — FastAPI reference service for health and tenant readiness
 - `backend/tests/` — Targeted tests for the backend baseline
+- `frontend/` — Next.js + React + TypeScript frontend baseline for core product modules
 - `infra/terraform/` — Azure-first Terraform starter
 - `infra/k8s/` — Kubernetes baseline deployment manifests
 - `.github/workflows/ci.yml` — CI pipeline for backend checks
@@ -25,6 +26,22 @@ pytest -q
 uvicorn app.main:app --reload
 ```
 
+## Quickstart (Frontend)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Optional production checks:
+
+```bash
+npm run lint
+npm run build
+npm run start
+```
+
 ## Scope
 
-This baseline provides production-oriented architecture artifacts and a runnable foundation that can be expanded into full module implementations for Copilot, Builder, Marketplace, LMS, and Observability.
+This baseline provides production-oriented architecture artifacts plus runnable backend and frontend foundations that can be expanded into full module implementations for Copilot, Builder, Marketplace, LMS, and Observability.
