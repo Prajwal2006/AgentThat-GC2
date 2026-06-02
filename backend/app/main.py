@@ -38,7 +38,7 @@ class Settings(BaseModel):
     allowed_origins: list[str] = Field(
         default_factory=lambda: _csv_env(
             "AGENTTHAT_ALLOWED_ORIGINS",
-            "http://localhost:3000,http://127.0.0.1:3000",
+            "http://localhost:3000,http://127.0.0.1:3000,http://[::1]:3000",
         )
     )
     azure_openai_endpoint: str | None = Field(default_factory=lambda: os.getenv("AZURE_OPENAI_ENDPOINT"))
@@ -66,6 +66,7 @@ app = FastAPI(title="AgentThat Backend", version="0.2.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -663,11 +664,21 @@ async def _azure_chat_json(system_prompt: str, user_prompt: str) -> dict[str, An
 
     endpoint = settings.azure_openai_endpoint.rstrip("/")  # type: ignore[union-attr]
     deployment = settings.azure_openai_deployment
-    url = (
+    deployment_url = (
         f"{endpoint}/openai/deployments/{deployment}/chat/completions"
         f"?api-version={settings.azure_openai_api_version}"
     )
-    body = {
+    deployment_body = {
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        "temperature": settings.azure_openai_temperature,
+        "response_format": {"type": "json_object"},
+    }
+    v1_url = f"{endpoint}/openai/v1/chat/completions"
+    v1_body = {
+        "model": deployment,
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
@@ -680,9 +691,27 @@ async def _azure_chat_json(system_prompt: str, user_prompt: str) -> dict[str, An
         "Content-Type": "application/json",
     }
     async with httpx.AsyncClient(timeout=45.0) as client:
-        response = await client.post(url, headers=headers, json=body)
+        response = await client.post(deployment_url, headers=headers, json=deployment_body)
+
+        # Some Azure AI Foundry configurations use the v1 OpenAI path with model routing.
+        if response.status_code == 404:
+            response = await client.post(v1_url, headers=headers, json=v1_body)
+
     if response.status_code >= 400:
+        if response.status_code == 404:
+            raise HTTPException(
+                status_code=502,
+                detail=(
+                    "Azure OpenAI returned 404 Resource not found. "
+                    "Verify AZURE_OPENAI_ENDPOINT is your Azure OpenAI endpoint, "
+                    "AZURE_OPENAI_DEPLOYMENT matches an existing deployment (or model-router target), "
+                    f"and AZURE_OPENAI_API_VERSION is valid for deployment-style calls. "
+                    f"Tried deployment URL '{deployment_url}' and v1 URL '{v1_url}'. "
+                    f"Azure response: {response.text}"
+                ),
+            )
         raise HTTPException(status_code=502, detail=f"Azure OpenAI error: {response.text}")
+
     data = response.json()
     content = data["choices"][0]["message"]["content"]
     try:
