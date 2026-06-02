@@ -16,10 +16,111 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { AppLayout } from "@/components/app-layout";
+import {
+  Agent,
+  DeploySolutionResponse,
+  GeneratedSolution,
+  ImprovePromptResponse,
+  apiPost,
+} from "@/lib/api";
 
 export default function AgentBuilder() {
   const [mode, setMode] = useState<"select" | "manual" | "ai">("select");
   const [agentName, setAgentName] = useState("");
+  const [description, setDescription] = useState("");
+  const [businessContext, setBusinessContext] = useState("");
+  const [improvedPrompt, setImprovedPrompt] = useState<ImprovePromptResponse | null>(null);
+  const [solution, setSolution] = useState<GeneratedSolution | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isImproving, setIsImproving] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isDeploying, setIsDeploying] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  const resetBuilder = () => {
+    setMode("select");
+    setAgentName("");
+    setDescription("");
+    setBusinessContext("");
+    setImprovedPrompt(null);
+    setSolution(null);
+    setStatusMessage(null);
+  };
+
+  const saveManualAgent = async () => {
+    setIsSaving(true);
+    setStatusMessage(null);
+    try {
+      const saved = await apiPost<Agent>("/v1/agents", {
+        name: agentName,
+        description,
+        category: "General",
+      });
+      setStatusMessage(`${saved.name} saved as a testing agent.`);
+      setAgentName("");
+      setDescription("");
+    } catch (error) {
+      setStatusMessage(error instanceof Error ? error.message : "Could not save agent.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const improvePrompt = async () => {
+    setIsImproving(true);
+    setStatusMessage(null);
+    try {
+      const result = await apiPost<ImprovePromptResponse>("/v1/ai/improve-prompt", {
+        prompt: description,
+        business_context: businessContext,
+      });
+      setImprovedPrompt(result);
+      setDescription(result.improved_prompt);
+    } catch (error) {
+      setStatusMessage(error instanceof Error ? error.message : "Could not improve prompt.");
+    } finally {
+      setIsImproving(false);
+    }
+  };
+
+  const generateSolution = async () => {
+    setIsGenerating(true);
+    setStatusMessage(null);
+    setSolution(null);
+    try {
+      const result = await apiPost<GeneratedSolution>("/v1/solutions/generate", {
+        name: agentName || "Generated AgentThat Workflow",
+        requirement: description,
+        mode: "workflow",
+        department: businessContext,
+      });
+      setSolution(result);
+    } catch (error) {
+      setStatusMessage(error instanceof Error ? error.message : "Could not generate architecture.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const deploySolution = async () => {
+    if (!solution) {
+      return;
+    }
+    setIsDeploying(true);
+    setStatusMessage(null);
+    try {
+      const result = await apiPost<DeploySolutionResponse>("/v1/solutions/deploy", {
+        solution,
+      });
+      setStatusMessage(
+        `Deployed workflow ${result.workflowId} with ${result.agentsCreated} agents.`
+      );
+    } catch (error) {
+      setStatusMessage(error instanceof Error ? error.message : "Could not deploy solution.");
+    } finally {
+      setIsDeploying(false);
+    }
+  };
 
   if (mode === "select") {
     return (
@@ -159,20 +260,31 @@ export default function AgentBuilder() {
               <textarea
                 className="w-full h-24 rounded-lg border border-border bg-secondary px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent"
                 placeholder="Describe what this agent does..."
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
               />
             </div>
+
+            {statusMessage && (
+              <Badge variant={statusMessage.includes("saved") ? "success" : "info"}>
+                {statusMessage}
+              </Badge>
+            )}
 
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                onClick={() => {
-                  setMode("select");
-                  setAgentName("");
-                }}
+                onClick={resetBuilder}
               >
                 Back
               </Button>
-              <Button className="flex-1">Save Agent</Button>
+              <Button
+                className="flex-1"
+                onClick={saveManualAgent}
+                disabled={isSaving || agentName.trim().length < 2 || description.trim().length < 4}
+              >
+                {isSaving ? "Saving..." : "Save Agent"}
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -214,26 +326,151 @@ export default function AgentBuilder() {
             <textarea
               className="w-full h-32 rounded-lg border border-border bg-secondary px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent"
               placeholder="Example: Create a customer support agent that classifies tickets, searches our knowledge base, drafts responses, escalates urgent issues to humans..."
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
             />
           </div>
+
+          <div>
+            <label className="text-sm font-medium mb-2 block">
+              Department or business context
+            </label>
+            <Input
+              placeholder="e.g., Support, Sales, HR, Operations"
+              value={businessContext}
+              onChange={(event) => setBusinessContext(event.target.value)}
+            />
+          </div>
+
+          {statusMessage && <Badge variant="info">{statusMessage}</Badge>}
 
           <div className="flex gap-3">
             <Button
               variant="outline"
-              onClick={() => {
-                setMode("select");
-                setAgentName("");
-              }}
+              onClick={resetBuilder}
             >
               Cancel
             </Button>
-            <Button className="flex-1 gap-2">
+            <Button
+              variant="secondary"
+              className="flex-1 gap-2"
+              onClick={improvePrompt}
+              disabled={isImproving || description.trim().length < 3}
+            >
+              <Sparkles className="w-4 h-4" />
+              {isImproving ? "Improving..." : "Improve Prompt"}
+            </Button>
+            <Button
+              className="flex-1 gap-2"
+              onClick={generateSolution}
+              disabled={isGenerating || description.trim().length < 8}
+            >
               <Wand2 className="w-4 h-4" />
-              Generate Agent Architecture
+              {isGenerating ? "Generating..." : "Generate Architecture"}
             </Button>
           </div>
         </CardContent>
       </Card>
+
+      {improvedPrompt && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Prompt Improvement</CardTitle>
+            <CardDescription>
+              Provider: {improvedPrompt.provider === "azure_openai" ? "Azure OpenAI" : "Fallback engine"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">{improvedPrompt.improved_prompt}</p>
+            <div className="flex flex-wrap gap-2">
+              {improvedPrompt.improvements.map((improvement) => (
+                <Badge key={improvement} variant="outline">
+                  {improvement}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {solution && (
+        <div className="mt-6 space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <CardTitle>{solution.name}</CardTitle>
+                  <CardDescription>{solution.summary}</CardDescription>
+                </div>
+                <Badge variant={solution.provider === "azure_openai" ? "success" : "info"}>
+                  {solution.provider === "azure_openai" ? "Azure OpenAI" : "Fallback"}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="text-sm font-semibold mb-2">Agents</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {solution.agents.map((agent) => (
+                    <div key={agent.name} className="rounded-lg border border-border p-4">
+                      <p className="font-medium">{agent.name}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{agent.purpose}</p>
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {agent.tools.map((tool) => (
+                          <Badge key={tool} variant="outline">
+                            {tool}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-semibold mb-2">Workflow</h3>
+                <div className="space-y-3">
+                  {solution.workflow.map((step) => (
+                    <div key={step.id} className="rounded-lg border border-border p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="font-medium">{step.name}</p>
+                        {step.human_approval && <Badge variant="info">Human approval</Badge>}
+                      </div>
+                      <p className="text-xs text-accent mt-1">{step.agent}</p>
+                      <p className="text-sm text-muted-foreground mt-2">{step.action}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  ["Integrations", solution.integrations],
+                  ["Governance", solution.governance],
+                  ["Observability", solution.observability],
+                ].map(([title, values]) => (
+                  <div key={title as string} className="rounded-lg border border-border p-4">
+                    <h3 className="text-sm font-semibold mb-3">{title as string}</h3>
+                    <div className="space-y-2">
+                      {(values as string[]).map((value) => (
+                        <p key={value} className="text-sm text-muted-foreground">
+                          {value}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex justify-end">
+                <Button onClick={deploySolution} disabled={isDeploying}>
+                  {isDeploying ? "Deploying..." : "Deploy Solution"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </AppLayout>
   );
 }

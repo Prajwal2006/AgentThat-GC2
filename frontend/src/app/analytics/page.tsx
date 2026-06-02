@@ -23,34 +23,58 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppLayout } from "@/components/app-layout";
 import { analyticsData } from "@/lib/mock-data";
+import { AnalyticsResponse, useApiResource } from "@/lib/api";
+import { Badge } from "@/components/ui/badge";
 
-export default function AnalyticsPage() {
-  const roiMetrics = [
+const fallbackAnalytics: AnalyticsResponse = {
+  roiMetrics: [
     {
       title: "Time Saved (Hours)",
       value: "2,847",
       change: "+12% this month",
-      icon: Zap,
+      icon: "Zap",
     },
     {
       title: "Cost Reduction",
       value: "$450K",
       change: "+18% savings",
-      icon: DollarSign,
+      icon: "DollarSign",
     },
     {
       title: "User Adoption",
       value: "95%",
       change: "+8% from last quarter",
-      icon: Users,
+      icon: "Users",
     },
     {
       title: "Efficiency Gain",
       value: "94%",
       change: "+6% improvement",
-      icon: TrendingUp,
+      icon: "TrendingUp",
     },
-  ];
+  ],
+  series: analyticsData,
+  departments: [
+    { dept: "Engineering", adoption: 98, users: 42 },
+    { dept: "Sales", adoption: 85, users: 35 },
+    { dept: "Marketing", adoption: 92, users: 28 },
+    { dept: "Operations", adoption: 78, users: 22 },
+    { dept: "HR", adoption: 65, users: 15 },
+  ],
+};
+
+const metricIcons = {
+  Zap,
+  DollarSign,
+  Users,
+  TrendingUp,
+};
+
+export default function AnalyticsPage() {
+  const { data, loading, error } = useApiResource<AnalyticsResponse>(
+    "/v1/analytics",
+    fallbackAnalytics
+  );
 
   return (
     <AppLayout>
@@ -62,16 +86,21 @@ export default function AnalyticsPage() {
             Track ROI and platform usage across your organization
           </p>
         </div>
-        <Button className="gap-2" variant="outline">
-          <Download className="w-4 h-4" />
-          Export Report
-        </Button>
+        <div className="flex items-center gap-3">
+          <Badge variant={error ? "destructive" : loading ? "info" : "success"}>
+            {error ? "Backend offline" : loading ? "Syncing" : "Live analytics"}
+          </Badge>
+          <Button className="gap-2" variant="outline">
+            <Download className="w-4 h-4" />
+            Export Report
+          </Button>
+        </div>
       </div>
 
       {/* ROI Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {roiMetrics.map((metric, idx) => {
-          const Icon = metric.icon;
+        {data.roiMetrics.map((metric, idx) => {
+          const Icon = metricIcons[metric.icon as keyof typeof metricIcons] ?? TrendingUp;
           return (
             <Card key={idx} className="hover:border-accent/50 transition-colors">
               <CardContent className="pt-6">
@@ -103,7 +132,7 @@ export default function AnalyticsPage() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={analyticsData}>
+              <LineChart data={data.series}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                 <XAxis dataKey="month" stroke="#64748b" />
                 <YAxis stroke="#64748b" />
@@ -135,7 +164,7 @@ export default function AnalyticsPage() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={analyticsData}>
+              <LineChart data={data.series}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                 <XAxis dataKey="month" stroke="#64748b" />
                 <YAxis stroke="#64748b" />
@@ -168,7 +197,7 @@ export default function AnalyticsPage() {
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={analyticsData}>
+            <BarChart data={data.series}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
               <XAxis dataKey="month" stroke="#64748b" />
               <YAxis stroke="#64748b" />
@@ -199,13 +228,7 @@ export default function AnalyticsPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {[
-              { dept: "Engineering", adoption: 98, users: 42 },
-              { dept: "Sales", adoption: 85, users: 35 },
-              { dept: "Marketing", adoption: 92, users: 28 },
-              { dept: "Operations", adoption: 78, users: 22 },
-              { dept: "HR", adoption: 65, users: 15 },
-            ].map((dept, idx) => (
+            {data.departments.map((dept, idx) => (
               <div key={idx} className="flex items-center gap-4">
                 <div className="flex-1">
                   <p className="font-medium text-sm mb-2">{dept.dept}</p>

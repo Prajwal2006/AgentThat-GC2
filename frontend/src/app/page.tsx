@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import {
   Zap,
   Workflow,
@@ -15,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Sidebar } from "@/components/sidebar";
 import { Header } from "@/components/header";
 import { dashboardStats, recentActivity, agents } from "@/lib/mock-data";
+import { PlatformOverview, useApiResource } from "@/lib/api";
 
 const icons: Record<string, React.ReactNode> = {
   Zap: <Zap className="w-5 h-5" />,
@@ -24,6 +26,12 @@ const icons: Record<string, React.ReactNode> = {
 };
 
 export default function Dashboard() {
+  const router = useRouter();
+  const { data, loading, error } = useApiResource<PlatformOverview>(
+    "/v1/platform/overview",
+    { dashboardStats, recentActivity, agents }
+  );
+
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar />
@@ -34,15 +42,22 @@ export default function Dashboard() {
         <div className="p-6 lg:p-8 space-y-8">
           {/* Welcome Section */}
           <div className="space-y-2">
-            <h1 className="text-4xl font-bold">Welcome back, Sarah</h1>
-            <p className="text-muted-foreground">
-              Here&apos;s what&apos;s happening with your AI platform
-            </p>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h1 className="text-4xl font-bold">Welcome back, Sarah</h1>
+                <p className="text-muted-foreground">
+                  Here&apos;s what&apos;s happening with your AI platform
+                </p>
+              </div>
+              <Badge variant={error ? "destructive" : loading ? "info" : "success"}>
+                {error ? "Backend offline" : loading ? "Syncing" : "Backend connected"}
+              </Badge>
+            </div>
           </div>
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {dashboardStats.map((stat, idx) => (
+            {data.dashboardStats.map((stat, idx) => (
               <Card key={idx} className="hover:border-accent/50 transition-colors">
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between">
@@ -70,15 +85,15 @@ export default function Dashboard() {
                 <CardTitle className="text-lg">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button className="w-full justify-start gap-2" variant="secondary">
+                <Button className="w-full justify-start gap-2" variant="secondary" onClick={() => router.push("/builder")}>
                   <Plus className="w-4 h-4" />
                   New Agent
                 </Button>
-                <Button className="w-full justify-start gap-2" variant="secondary">
+                <Button className="w-full justify-start gap-2" variant="secondary" onClick={() => router.push("/workflows")}>
                   <Workflow className="w-4 h-4" />
                   New Workflow
                 </Button>
-                <Button className="w-full justify-start gap-2" variant="secondary">
+                <Button className="w-full justify-start gap-2" variant="secondary" onClick={() => router.push("/marketplace")}>
                   <Play className="w-4 h-4" />
                   Browse Templates
                 </Button>
@@ -93,7 +108,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {recentActivity.map((activity) => (
+                  {data.recentActivity.map((activity) => (
                     <div
                       key={activity.id}
                       className="flex items-start justify-between border-b border-border pb-4 last:border-0"
@@ -140,7 +155,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {agents.slice(0, 3).map((agent) => (
+                {data.agents.slice(0, 3).map((agent) => (
                   <div
                     key={agent.id}
                     className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-white/5 transition-colors"

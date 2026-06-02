@@ -20,7 +20,10 @@ AgentThat is an enterprise-grade multi-tenant SaaS platform that helps non-techn
 ```bash
 cd backend
 python -m venv .venv
-source .venv/bin/activate
+## Windows PowerShell:
+## .\.venv\Scripts\Activate.ps1
+## macOS/Linux:
+## source .venv/bin/activate
 pip install -r requirements.txt
 pytest -q
 uvicorn app.main:app --reload
@@ -33,6 +36,30 @@ cd frontend
 npm install
 npm run dev
 ```
+
+## Environment Setup
+
+1. Copy [backend/.env.example](backend/.env.example) to [backend/.env](backend/.env) and fill Azure OpenAI values:
+- `AZURE_OPENAI_ENDPOINT`
+- `AZURE_OPENAI_API_KEY`
+- `AZURE_OPENAI_DEPLOYMENT`
+
+2. Copy [frontend/.env.example](frontend/.env.example) to [frontend/.env](frontend/.env):
+- `NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000`
+
+3. Start backend and frontend in separate terminals:
+
+```bash
+# terminal 1
+cd backend
+python -m uvicorn app.main:app --reload
+
+# terminal 2
+cd frontend
+npm run dev
+```
+
+When Azure values are configured, the Builder page uses live Azure OpenAI for prompt improvement and solution generation. If values are missing, deterministic fallback logic keeps the app usable.
 
 Optional production checks:
 

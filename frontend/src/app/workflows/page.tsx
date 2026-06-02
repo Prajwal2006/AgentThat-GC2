@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Plus,
   Play,
@@ -12,29 +13,87 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { AppLayout } from "@/components/app-layout";
 import { workflows } from "@/lib/mock-data";
+import { WorkflowItem, apiPost, useApiResource } from "@/lib/api";
 
 export default function WorkflowsPage() {
+  const { data, loading, error, setData } = useApiResource<WorkflowItem[]>("/v1/workflows", workflows);
+  const [newWorkflowName, setNewWorkflowName] = useState("");
+  const [newWorkflowDescription, setNewWorkflowDescription] = useState("");
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  const createWorkflow = async () => {
+    try {
+      const created = await apiPost<WorkflowItem>("/v1/workflows", {
+        name: newWorkflowName,
+        description: newWorkflowDescription,
+        agents: 2,
+      });
+      setData((current) => [created, ...current]);
+      setStatusMessage(`Created workflow: ${created.name}`);
+      setNewWorkflowName("");
+      setNewWorkflowDescription("");
+    } catch (err) {
+      setStatusMessage(err instanceof Error ? err.message : "Could not create workflow.");
+    }
+  };
+
+  const controlWorkflow = async (workflow: WorkflowItem, action: "run" | "pause" | "resume") => {
+    try {
+      const updated = await apiPost<WorkflowItem>(`/v1/workflows/${workflow.id}/control`, { action });
+      setData((current) =>
+        current.map((item) => (item.id === updated.id ? updated : item))
+      );
+      setStatusMessage(`${updated.name} is now ${updated.status}.`);
+    } catch (err) {
+      setStatusMessage(err instanceof Error ? err.message : "Could not update workflow.");
+    }
+  };
+
   return (
     <AppLayout>
       <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-2">
           <h1 className="text-4xl font-bold">Workflow Studio</h1>
           <p className="text-muted-foreground">
             Design and orchestrate multi-agent workflows
           </p>
         </div>
-        <Button className="gap-2">
-          <Plus className="w-4 h-4" />
-          New Workflow
-        </Button>
+        <div className="flex items-center gap-3">
+          <Badge variant={error ? "destructive" : loading ? "info" : "success"}>
+            {error ? "Backend offline" : loading ? "Syncing" : "Live workflows"}
+          </Badge>
+          <Button className="gap-2" onClick={createWorkflow} disabled={newWorkflowName.trim().length < 3 || newWorkflowDescription.trim().length < 8}>
+            <Plus className="w-4 h-4" />
+            New Workflow
+          </Button>
+        </div>
       </div>
+
+      <Card>
+        <CardContent className="pt-6 space-y-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <Input
+              placeholder="Workflow name"
+              value={newWorkflowName}
+              onChange={(event) => setNewWorkflowName(event.target.value)}
+            />
+            <Input
+              placeholder="Workflow description"
+              value={newWorkflowDescription}
+              onChange={(event) => setNewWorkflowDescription(event.target.value)}
+            />
+          </div>
+          {statusMessage && <Badge variant="info">{statusMessage}</Badge>}
+        </CardContent>
+      </Card>
 
       {/* Workflow List */}
       <div className="space-y-4">
-        {workflows.map((workflow) => (
+        {data.map((workflow) => (
           <Card
             key={workflow.id}
             className="hover:border-accent/50 transition-colors cursor-pointer"
@@ -72,7 +131,20 @@ export default function WorkflowsPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() =>
+                      controlWorkflow(
+                        workflow,
+                        workflow.status === "active"
+                          ? "pause"
+                          : workflow.status === "paused"
+                          ? "resume"
+                          : "run"
+                      )
+                    }
+                  >
                     {workflow.status === "active" ? (
                       <Pause className="w-5 h-5" />
                     ) : (

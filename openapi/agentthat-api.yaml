@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: AgentThat API
-  version: 0.1.0
+  version: 0.2.0
   description: Baseline tenant-aware APIs for AgentThat platform services.
 servers:
   - url: https://api.agentthat.example.com
@@ -38,6 +38,251 @@ paths:
                 $ref: '#/components/schemas/TenantHealthResponse'
         '400':
           description: Invalid tenant id
+  /v1/ai/status:
+    get:
+      summary: Azure OpenAI integration status
+      operationId: getAiStatus
+      responses:
+        '200':
+          description: AI service status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiStatus'
+  /v1/platform/overview:
+    get:
+      summary: Dashboard overview data
+      operationId: getPlatformOverview
+      responses:
+        '200':
+          description: Dashboard stats, activity, and agents
+  /v1/agents:
+    get:
+      summary: List agents
+      operationId: listAgents
+      responses:
+        '200':
+          description: Agent list
+    post:
+      summary: Create a manual agent
+      operationId: createAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManualAgentRequest'
+      responses:
+        '200':
+          description: Saved agent
+  /v1/workflows:
+    get:
+      summary: List workflows
+      operationId: listWorkflows
+      responses:
+        '200':
+          description: Workflow list
+    post:
+      summary: Create workflow
+      operationId: createWorkflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowCreateRequest'
+      responses:
+        '200':
+          description: Created workflow
+  /v1/workflows/{workflowId}/control:
+    post:
+      summary: Control workflow state
+      operationId: controlWorkflow
+      parameters:
+        - in: path
+          name: workflowId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowControlRequest'
+      responses:
+        '200':
+          description: Updated workflow
+  /v1/marketplace:
+    get:
+      summary: List marketplace assets
+      operationId: listMarketplaceAssets
+      responses:
+        '200':
+          description: Marketplace asset list
+  /v1/marketplace/{itemId}/install:
+    post:
+      summary: Install marketplace asset
+      operationId: installMarketplaceAsset
+      parameters:
+        - in: path
+          name: itemId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Asset installed
+  /v1/analytics:
+    get:
+      summary: Get adoption analytics
+      operationId: getAnalytics
+      responses:
+        '200':
+          description: ROI metrics and adoption charts
+  /v1/learning:
+    get:
+      summary: Get learning catalog and progress
+      operationId: getLearning
+      responses:
+        '200':
+          description: Learning platform data
+  /v1/learning/courses/{courseId}/start:
+    post:
+      summary: Start a course
+      operationId: startCourse
+      parameters:
+        - in: path
+          name: courseId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Updated learning payload
+  /v1/learning/courses/{courseId}/complete:
+    post:
+      summary: Complete a course
+      operationId: completeCourse
+      parameters:
+        - in: path
+          name: courseId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Updated learning payload
+  /v1/settings/profile:
+    get:
+      summary: Get profile settings
+      operationId: getProfileSettings
+      responses:
+        '200':
+          description: Profile settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileSettings'
+    put:
+      summary: Update profile settings
+      operationId: updateProfileSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileSettings'
+      responses:
+        '200':
+          description: Updated profile settings
+  /v1/settings/notifications:
+    get:
+      summary: Get notification settings
+      operationId: getNotificationSettings
+      responses:
+        '200':
+          description: Notification settings
+    put:
+      summary: Update notification settings
+      operationId: updateNotificationSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/NotificationItem'
+      responses:
+        '200':
+          description: Updated notification settings
+  /v1/team/members:
+    get:
+      summary: List team members
+      operationId: listTeamMembers
+      responses:
+        '200':
+          description: Team member list
+    post:
+      summary: Invite team member
+      operationId: addTeamMember
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamMemberCreateRequest'
+      responses:
+        '200':
+          description: Created team member invite
+  /v1/ai/improve-prompt:
+    post:
+      summary: Improve a user prompt for enterprise agent generation
+      operationId: improvePrompt
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImprovePromptRequest'
+      responses:
+        '200':
+          description: Improved prompt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImprovePromptResponse'
+  /v1/solutions/generate:
+    post:
+      summary: Generate an agent or workflow architecture
+      operationId: generateSolution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateSolutionRequest'
+      responses:
+        '200':
+          description: Generated solution architecture
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneratedSolution'
+  /v1/solutions/deploy:
+    post:
+      summary: Deploy generated solution into active workflow and agents
+      operationId: deploySolution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeploySolutionRequest'
+      responses:
+        '200':
+          description: Deployment status
 components:
   securitySchemes:
     bearerAuth:
@@ -63,3 +308,158 @@ components:
           enum: [ok]
         tenantId:
           type: string
+    AiStatus:
+      type: object
+      required: [provider, configured, apiVersion, mode]
+      properties:
+        provider:
+          type: string
+          enum: [azure_openai]
+        configured:
+          type: boolean
+        deployment:
+          type: string
+          nullable: true
+        apiVersion:
+          type: string
+        mode:
+          type: string
+          enum: [live, deterministic-fallback]
+    ManualAgentRequest:
+      type: object
+      required: [name, description]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+    ImprovePromptRequest:
+      type: object
+      required: [prompt]
+      properties:
+        prompt:
+          type: string
+        business_context:
+          type: string
+          nullable: true
+    ImprovePromptResponse:
+      type: object
+      required: [original_prompt, improved_prompt, improvements, provider]
+      properties:
+        original_prompt:
+          type: string
+        improved_prompt:
+          type: string
+        improvements:
+          type: array
+          items:
+            type: string
+        provider:
+          type: string
+          enum: [azure_openai, deterministic]
+    GenerateSolutionRequest:
+      type: object
+      required: [requirement]
+      properties:
+        name:
+          type: string
+        requirement:
+          type: string
+        mode:
+          type: string
+          enum: [agent, workflow, optimization]
+        department:
+          type: string
+          nullable: true
+    WorkflowCreateRequest:
+      type: object
+      required: [name, description]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        agents:
+          type: integer
+    WorkflowControlRequest:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: string
+          enum: [run, pause, resume]
+    ProfileSettings:
+      type: object
+      required: [full_name, email, role]
+      properties:
+        full_name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [Admin, Developer, User]
+    NotificationItem:
+      type: object
+      required: [label, enabled]
+      properties:
+        label:
+          type: string
+        enabled:
+          type: boolean
+    TeamMemberCreateRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+          enum: [Admin, Developer, User]
+    DeploySolutionRequest:
+      type: object
+      required: [solution]
+      properties:
+        solution:
+          $ref: '#/components/schemas/GeneratedSolution'
+    GeneratedSolution:
+      type: object
+      required: [id, name, summary, improved_prompt, agents, workflow, integrations, governance, observability, deployment, provider]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        summary:
+          type: string
+        improved_prompt:
+          type: string
+        agents:
+          type: array
+          items:
+            type: object
+        workflow:
+          type: array
+          items:
+            type: object
+        integrations:
+          type: array
+          items:
+            type: string
+        governance:
+          type: array
+          items:
+            type: string
+        observability:
+          type: array
+          items:
+            type: string
+        deployment:
+          type: object
+          additionalProperties:
+            type: string
+        provider:
+          type: string
+          enum: [azure_openai, deterministic]

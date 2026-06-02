@@ -13,64 +13,89 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { AppLayout } from "@/components/app-layout";
 import { courses } from "@/lib/mock-data";
+import { LearningResponse, apiPost, useApiResource } from "@/lib/api";
+
+const fallbackLearning: LearningResponse = {
+  stats: [
+    { title: "Courses Completed", value: "1", change: "25% progress overall", icon: "CheckCircle" },
+    { title: "Certifications", value: "0", change: "Complete courses to earn", icon: "Award" },
+    { title: "Learning Streak", value: "3", change: "Days in a row", icon: "Target" },
+  ],
+  path: [
+    { step: 1, title: "AI Fundamentals", status: "completed" },
+    { step: 2, title: "Prompt Engineering Mastery", status: "in_progress" },
+    { step: 3, title: "Building Multi-Agent Systems", status: "available" },
+    { step: 4, title: "Advanced Optimization", status: "available" },
+  ],
+  courses,
+  certifications: [
+    { name: "AgentThat Fundamentals", courses: 2, level: "Beginner" },
+    { name: "Advanced Agent Builder", courses: 3, level: "Intermediate" },
+    { name: "Enterprise Architect", courses: 4, level: "Advanced" },
+    { name: "Certified Prompt Engineer", courses: 2, level: "Advanced" },
+  ],
+};
+
+const statIcons = {
+  CheckCircle,
+  Award,
+  Target,
+};
 
 export default function LearningPage() {
+  const { data, loading, error, setData } = useApiResource<LearningResponse>(
+    "/v1/learning",
+    fallbackLearning
+  );
+
+  const updateCourse = async (courseId: string, action: "start" | "complete") => {
+    try {
+      const result = await apiPost<LearningResponse>(
+        `/v1/learning/courses/${courseId}/${action}`,
+        {}
+      );
+      setData(result);
+    } catch {
+      // Keep existing fallback content on API errors.
+    }
+  };
+
   return (
     <AppLayout>
       <div className="space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-4xl font-bold">Learning Platform</h1>
-        <p className="text-muted-foreground">
-          Master AI and AgentThat with our comprehensive courses
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-bold">Learning Platform</h1>
+          <p className="text-muted-foreground">
+            Master AI and AgentThat with our comprehensive courses
+          </p>
+        </div>
+        <Badge variant={error ? "destructive" : loading ? "info" : "success"}>
+          {error ? "Backend offline" : loading ? "Syncing" : "Live learning"}
+        </Badge>
       </div>
 
       {/* Learning Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">
-                  Courses Completed
-                </p>
-                <p className="text-3xl font-bold">1</p>
-                <p className="text-xs text-accent mt-2">25% progress overall</p>
-              </div>
-              <CheckCircle className="w-5 h-5 text-accent opacity-50" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">
-                  Certifications
-                </p>
-                <p className="text-3xl font-bold">0</p>
-                <p className="text-xs text-accent mt-2">Complete courses to earn</p>
-              </div>
-              <Award className="w-5 h-5 text-accent opacity-50" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">
-                  Learning Streak
-                </p>
-                <p className="text-3xl font-bold">3</p>
-                <p className="text-xs text-accent mt-2">Days in a row</p>
-              </div>
-              <Target className="w-5 h-5 text-accent opacity-50" />
-            </div>
-          </CardContent>
-        </Card>
+        {data.stats.map((stat) => {
+          const Icon = statIcons[stat.icon as keyof typeof statIcons] ?? Target;
+          return (
+            <Card key={stat.title}>
+              <CardContent className="pt-6">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      {stat.title}
+                    </p>
+                    <p className="text-3xl font-bold">{stat.value}</p>
+                    <p className="text-xs text-accent mt-2">{stat.change}</p>
+                  </div>
+                  <Icon className="w-5 h-5 text-accent opacity-50" />
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Recommended Learning Path */}
@@ -83,28 +108,7 @@ export default function LearningPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {[
-              {
-                step: 1,
-                title: "AI Fundamentals",
-                status: "completed",
-              },
-              {
-                step: 2,
-                title: "Prompt Engineering Mastery",
-                status: "in_progress",
-              },
-              {
-                step: 3,
-                title: "Building Multi-Agent Systems",
-                status: "available",
-              },
-              {
-                step: 4,
-                title: "Advanced Optimization",
-                status: "available",
-              },
-            ].map((path) => (
+            {data.path.map((path) => (
               <div
                 key={path.step}
                 className="flex items-center gap-4 p-4 rounded-lg border border-border"
@@ -137,7 +141,7 @@ export default function LearningPage() {
         <h2 className="text-2xl font-bold">All Courses</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {courses.map((course) => (
+          {data.courses.map((course) => (
             <Card
               key={course.id}
               className="hover:border-accent/50 transition-colors flex flex-col"
@@ -185,7 +189,13 @@ export default function LearningPage() {
                   </div>
                 )}
 
-                <Button className="w-full mt-4 gap-2" variant={course.completion > 0 ? "secondary" : "default"}>
+                <Button
+                  className="w-full mt-4 gap-2"
+                  variant={course.completion > 0 ? "secondary" : "default"}
+                  onClick={() =>
+                    updateCourse(course.id, course.completion === 100 ? "complete" : "start")
+                  }
+                >
                   {course.completion === 0 && (
                     <>
                       <Play className="w-4 h-4" />
@@ -221,28 +231,7 @@ export default function LearningPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[
-              {
-                name: "AgentThat Fundamentals",
-                courses: 2,
-                level: "Beginner",
-              },
-              {
-                name: "Advanced Agent Builder",
-                courses: 3,
-                level: "Intermediate",
-              },
-              {
-                name: "Enterprise Architect",
-                courses: 4,
-                level: "Advanced",
-              },
-              {
-                name: "Certified Prompt Engineer",
-                courses: 2,
-                level: "Advanced",
-              },
-            ].map((cert, idx) => (
+            {data.certifications.map((cert, idx) => (
               <Card key={idx} className="border border-accent/20">
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between mb-4">

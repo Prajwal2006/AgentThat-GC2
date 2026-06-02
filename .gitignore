@@ -9,3 +9,8 @@ node_modules/
 
 # OS
 .DS_Store
+
+# Local env files
+.env
+.env.*
+!.env.example
