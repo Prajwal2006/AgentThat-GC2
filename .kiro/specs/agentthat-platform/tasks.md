@@ -7,32 +7,32 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
 ## Tasks
 
 - [ ] 1. Foundation: Database models, tenant isolation, and repository layer
-  - [ ] 1.1 Create SQLAlchemy database models for Tenant, User, Agent, AgentVersion, AgentStateTransition
+  - [x] 1.1 Create SQLAlchemy database models for Tenant, User, Agent, AgentVersion, AgentStateTransition
     - Create `backend/app/models/db/tenant.py` with Tenant model (id, name, tier, data_region, max_concurrent_jobs, hourly_cost_rate, currency, audit_retention_days)
     - Create `backend/app/models/db/user.py` with User model (id, tenant_id, external_id, email, display_name, role, status, group_memberships, last_login_at)
     - Create `backend/app/models/db/agent.py` with Agent, AgentVersion, AgentStateTransition models per design document
     - Create `backend/app/models/db/__init__.py` exporting all models
     - _Requirements: 15.2, 16.1, 3.2, 3.3, 26.1_
 
-  - [ ] 1.2 Create SQLAlchemy database models for Workflow, WorkflowVersion, WorkflowStep, ExecutionRun, StepExecution, ContextEntry
+  - [x] 1.2 Create SQLAlchemy database models for Workflow, WorkflowVersion, WorkflowStep, ExecutionRun, StepExecution, ContextEntry
     - Create `backend/app/models/db/workflow.py` with Workflow, WorkflowVersion, WorkflowStep models
     - Create `backend/app/models/db/execution.py` with ExecutionRun, StepExecution, ContextEntry models
     - Include all fields, foreign keys, and constraints per design ER diagram
     - _Requirements: 7.1, 6.1, 6.11, 28.4_
 
-  - [ ] 1.3 Create SQLAlchemy database models for Marketplace, Rating, Review, BackgroundJob, AuditLog, MCPServer
+  - [x] 1.3 Create SQLAlchemy database models for Marketplace, Rating, Review, BackgroundJob, AuditLog, MCPServer
     - Create `backend/app/models/db/marketplace.py` with MarketplaceListing, Rating, Review models (include UniqueConstraints)
     - Create `backend/app/models/db/job.py` with BackgroundJob model
     - Create `backend/app/models/db/audit.py` with AuditLog model
     - Create `backend/app/models/db/mcp_server.py` with MCPServer, MCPServerVersion models
     - _Requirements: 9.1, 10.1, 10.3, 17.1, 8.1, 21.1_
 
-  - [ ] 1.4 Create SQLAlchemy database models for Course, Enrollment, Certification, LearningPath
+  - [x] 1.4 Create SQLAlchemy database models for Course, Enrollment, Certification, LearningPath
     - Create `backend/app/models/db/learning.py` with Course, Enrollment, Certification models
     - Include prerequisite_ids JSONB, assessment_config JSONB, completion tracking fields
     - _Requirements: 13.1, 13.3, 13.4, 14.1, 14.2_
 
-  - [ ] 1.5 Create tenant-aware base repository with automatic tenant scoping
+  - [x] 1.5 Create tenant-aware base repository with automatic tenant scoping
     - Create `backend/app/repositories/base.py` with TenantScopedRepository class
     - All queries must inject `WHERE tenant_id = :tenant_id` automatically
     - Provide `get_by_id`, `list_all`, `create`, `update`, `delete` methods that enforce tenant isolation
@@ -53,21 +53,21 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - **Validates: Requirements 19.1, 19.2, 28.5, 16.4**
 
 - [ ] 2. Authentication, authorization, and audit infrastructure
-  - [ ] 2.1 Implement JWT authentication middleware with tenant context extraction
+  - [x] 2.1 Implement JWT authentication middleware with tenant context extraction
     - Create `backend/app/middleware/auth.py` with JWT validation, tenant_id/user_id/role extraction
     - Support Bearer token format; extract claims for tenant_id, user_id, roles, email
     - Create FastAPI dependency `get_current_user` returning authenticated user context
     - Configure session timeout and token refresh validation
     - _Requirements: 15.1, 15.2, 15.3_
 
-  - [ ] 2.2 Implement RBAC permission enforcement middleware
+  - [x] 2.2 Implement RBAC permission enforcement middleware
     - Create `backend/app/middleware/rbac.py` with role hierarchy (Admin > Developer > User)
     - Create `require_role(min_role)` decorator/dependency for route protection
     - Implement attribute-based access control (workspace membership, resource ownership/sharing)
     - Deny with 403 and generic message on failure
     - _Requirements: 16.1, 16.2, 16.3, 16.6_
 
-  - [ ] 2.3 Implement audit logging service with append-only guarantee
+  - [x] 2.3 Implement audit logging service with append-only guarantee
     - Create `backend/app/services/audit.py` with AuditService class
     - Record: timestamp (UTC ISO 8601 ms), user_id, tenant_id, operation, resource_type, resource_id, outcome
     - Enforce append-only (no update/delete before retention expiry)
@@ -75,7 +75,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Support search/export filtered by time, user, operation, resource (max 10,000 results, CSV/JSON)
     - _Requirements: 17.1, 17.2, 17.5, 17.6, 17.7_
 
-  - [ ] 2.4 Implement audit logging API endpoints
+  - [x] 2.4 Implement audit logging API endpoints
     - Create `backend/app/api/v1/audit.py` with GET `/v1/audit` (search), GET `/v1/audit/export` (CSV/JSON)
     - Apply admin-only RBAC
     - Filter by time_range, user_id, operation_type, resource_id
@@ -122,25 +122,25 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - **Validates: Requirements 8.6**
 
 - [ ] 5. Solution Architect Service
-  - [ ] 5.1 Implement requirement validation with length and business intent checks
+  - [x] 5.1 Implement requirement validation with length and business intent checks
     - Create `backend/app/services/solution_architect.py` with SolutionArchitectService
     - Validate input length (20-8000 chars), reject outside range with error message
     - Detect business intent (minimum 2 domain-relevant terms), prompt refinement if insufficient
     - _Requirements: 1.2, 1.8_
 
-  - [ ] 5.2 Implement LLM-powered solution generation with structural completeness
+  - [x] 5.2 Implement LLM-powered solution generation with structural completeness
     - Add `generate()` method using Azure OpenAI to produce complete solution architecture
     - Output must include: agents (name, purpose, prompt, tools, handoff), workflow (steps, ordering, assignments, human-approval), integrations, governance (tenant isolation, RBAC, audit, approval triggers), memory config (adapter type, retention, context window per agent), RAG config (knowledge sources, embedding model, chunking, retrieval, thresholds), deployment config (environment, scaling, resource limits, region)
     - Enforce 60-second generation timeout
     - _Requirements: 1.1, 1.3, 1.4, 1.5, 1.6, 1.9, 1.10, 1.11_
 
-  - [ ] 5.3 Implement rule-based fallback generator for LLM unavailability
+  - [x] 5.3 Implement rule-based fallback generator for LLM unavailability
     - Add `fallback_generate()` method producing valid solution meeting same structural requirements
     - Must satisfy same structure: agents, workflow, integrations, governance, memory, RAG, deployment
     - Include `provider: "deterministic"` indicator in response
     - _Requirements: 1.7_
 
-  - [ ] 5.4 Create Solution Architect API endpoints
+  - [x] 5.4 Create Solution Architect API endpoints
     - Create `backend/app/api/v1/solutions.py` with POST `/v1/solutions/generate`, GET `/v1/solutions`, POST `/v1/solutions/{id}/deploy`, DELETE `/v1/solutions/{id}`
     - Route payloads >4000 chars to background job queue automatically
     - Wire auth, RBAC, audit logging, tenant scoping
@@ -159,7 +159,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - **Validates: Requirements 1.7, 2.4**
 
 - [ ] 6. Prompt Improvement Engine
-  - [ ] 6.1 Implement prompt improvement service with LLM and deterministic fallback
+  - [x] 6.1 Implement prompt improvement service with LLM and deterministic fallback
     - Create `backend/app/services/prompt_engine.py` with PromptImprovementEngine
     - Accept prompt (3-6000 chars), optional business context (up to 2000 chars)
     - LLM path: return improved prompt + 1-10 categorized improvements within 30 seconds
@@ -178,13 +178,13 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Support comparison between any two versions showing additions/removals/modifications
     - _Requirements: 2.9_
 
-  - [ ] 6.4 Create Prompt Engine API endpoints
+  - [x] 6.4 Create Prompt Engine API endpoints
     - Create `backend/app/api/v1/prompts.py` with POST `/v1/prompts/improve`, POST `/v1/prompts/alternatives`, GET `/v1/prompts/{id}/versions`, POST `/v1/prompts/{id}/accept`
     - Wire auth, RBAC, audit, tenant scoping
     - _Requirements: 2.1, 2.6, 2.7, 2.8, 2.9_
 
 - [ ] 7. Agent Generation Studio
-  - [ ] 7.1 Implement manual agent creation service with validation
+  - [x] 7.1 Implement manual agent creation service with validation
     - Create `backend/app/services/agent_studio.py` with AgentStudioService
     - Validate: name (2-120 chars), description (4-1000 chars), category from tenant list
     - Require minimum one prompt block and one tool component for completeness
@@ -208,7 +208,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Revert partial changes on failure
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-  - [ ] 7.4 Create Agent Studio API endpoints
+  - [x] 7.4 Create Agent Studio API endpoints
     - Create `backend/app/api/v1/agents.py` with full CRUD: POST/GET/PUT `/v1/agents`, POST `/v1/agents/generate`, POST `/v1/agents/{id}/optimize`
     - Wire auth, RBAC, audit, tenant scoping, background job routing for large payloads
     - _Requirements: 3.2, 3.3, 4.1, 4.6, 5.1_
@@ -222,7 +222,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 9. Agent Lifecycle Management
-  - [ ] 9.1 Implement agent lifecycle state machine with transition validation
+  - [x] 9.1 Implement agent lifecycle state machine with transition validation
     - Create `backend/app/services/agent_lifecycle.py` with AgentLifecycleManager
     - Valid transitions: Draft→Testing→Staging→Production→Deprecated→Retired, any→Retired
     - Reject invalid transitions with error (current state + allowed targets)
@@ -244,7 +244,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - **Validates: Requirements 26.1, 26.2, 26.3**
 
 - [ ] 10. Workflow Orchestration Engine
-  - [ ] 10.1 Implement workflow CRUD with lifecycle commands (run/pause/resume)
+  - [x] 10.1 Implement workflow CRUD with lifecycle commands (run/pause/resume)
     - Create `backend/app/services/orchestrator.py` with WorkflowOrchestrator
     - Create workflow: validate name (3-120), description (8-1000), agents (1-12)
     - State transitions: run (draft|paused→active), pause (active→paused), resume (paused→active)
@@ -274,7 +274,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - On retry exhaustion + no recovery: halt workflow, mark failed, log full context
     - _Requirements: 6.7, 6.8, 6.9, 6.10_
 
-  - [ ] 10.5 Create workflow orchestration API endpoints
+  - [x] 10.5 Create workflow orchestration API endpoints
     - Create `backend/app/api/v1/workflows.py` with POST/GET `/v1/workflows`, POST `/v1/workflows/{id}/control`, POST `/v1/workflows/{id}/optimize`
     - Create `backend/app/api/v1/executions.py` with GET `/v1/executions`, GET `/v1/executions/{id}`, POST `/v1/executions/{id}/approve`, GET `/v1/executions/{id}/stream`
     - _Requirements: 7.1, 7.3, 6.4_
@@ -513,7 +513,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - _Requirements: 18.1, 18.2, 18.3, 18.4, 18.5, 18.6, 18.7_
 
 - [ ] 21. Frontend: Dashboard and Navigation
-  - [ ] 21.1 Implement platform dashboard with aggregate stats, activity feed, and quick actions
+  - [x] 21.1 Implement platform dashboard with aggregate stats, activity feed, and quick actions
     - Update `frontend/src/app/page.tsx` to fetch from `/v1/platform/overview`
     - Display stats: total agents, active workflows, team members, avg efficiency (30-day mean success rate)
     - Activity feed: up to 20 events (agent creation, workflow deployment, prompt improvement, marketplace install) reverse chronological
@@ -531,7 +531,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - _Requirements: 23.1, 8.2, 8.3_
 
 - [ ] 22. Frontend: Agent Builder and Generation
-  - [ ] 22.1 Implement agent builder canvas (visual drag-and-drop)
+  - [x] 22.1 Implement agent builder canvas (visual drag-and-drop)
     - Update `frontend/src/app/builder/page.tsx` with visual canvas for agent components
     - Support drag-and-drop: tools, memory adapters, prompt blocks, handoff connections (max 50 components)
     - Validate completeness (min 1 prompt + 1 tool with connections) before save
@@ -539,7 +539,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Display available MCP servers and built-in tools filtered by category
     - _Requirements: 3.1, 3.4, 3.5, 3.6_
 
-  - [ ] 22.2 Implement AI generation mode UI with progress indicator
+  - [x] 22.2 Implement AI generation mode UI with progress indicator
     - Add natural language input (10-2000 chars) for AI generation
     - Display progress indicator during generation
     - Present generated config in visual builder for review/modification before save
@@ -556,7 +556,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
 - [ ] 23. Frontend: Workflow Editor and Execution Viewer
-  - [ ] 23.1 Implement workflow creation, control, and monitoring UI
+  - [x] 23.1 Implement workflow creation, control, and monitoring UI
     - Update `frontend/src/app/workflows/page.tsx` with workflow list + create dialog
     - Workflow creation form: name (3-120), description (8-1000), agent count (1-12) with validation
     - Control buttons: Run/Pause/Resume with appropriate state-based visibility
@@ -572,7 +572,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - _Requirements: 6.4, 6.11, 22.6, 8.2_
 
 - [ ] 24. Frontend: Marketplace, Analytics, and Learning
-  - [ ] 24.1 Implement marketplace browse, search, and install UI
+  - [x] 24.1 Implement marketplace browse, search, and install UI
     - Update `frontend/src/app/marketplace/page.tsx` with search, filters (category, rating, type), results (max 50/page)
     - Install action with confirmation and success message
     - Rating widget (0.5 increments, 1.0-5.0)
@@ -581,14 +581,14 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Prevent self-rating/review for item owners
     - _Requirements: 9.2, 9.3, 9.4, 10.1, 10.3, 10.4, 10.5, 10.6_
 
-  - [ ] 24.2 Implement analytics dashboard and report views
+  - [x] 24.2 Implement analytics dashboard and report views
     - Update `frontend/src/app/analytics/page.tsx` with ROI metrics, time-series charts, department breakdown
     - Filter by time period (weekly/monthly/quarterly), department, team, asset type
     - Export actions (PDF, presentation outline)
     - Insufficient sample indicator for groups <5 executions
     - _Requirements: 11.1, 11.3, 11.5, 11.6_
 
-  - [ ] 24.3 Implement learning platform UI with courses, paths, and certifications
+  - [x] 24.3 Implement learning platform UI with courses, paths, and certifications
     - Update `frontend/src/app/learning/page.tsx` with course catalog, enrollment, progress tracking
     - Display learning paths by role with prerequisite indicators
     - Assessment interface with score display and reattempt scheduling
@@ -597,7 +597,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - _Requirements: 13.1, 13.2, 13.3, 14.3, 14.4, 14.6_
 
 - [ ] 25. Frontend: Settings, Team Collaboration, and Profile
-  - [ ] 25.1 Implement settings page with profile, notifications, and team management
+  - [x] 25.1 Implement settings page with profile, notifications, and team management
     - Update `frontend/src/app/settings/page.tsx` with tabbed interface
     - Profile: full name (1-100), email (valid format), role display with validation errors
     - Notifications: individual toggles (agent deployments, workflow runs, team invitations, weekly reports)

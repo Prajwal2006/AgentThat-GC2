@@ -6,6 +6,7 @@ import {
   Home,
   Zap,
   Workflow,
+  GitBranch,
   Store,
   TrendingUp,
   BookOpen,
@@ -29,6 +30,11 @@ const navItems = [
     label: "Workflow Studio",
     icon: Workflow,
     href: "/workflows",
+  },
+  {
+    label: "Orchestration",
+    icon: GitBranch,
+    href: "/orchestration",
   },
   {
     label: "Marketplace",

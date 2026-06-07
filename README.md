@@ -53,7 +53,6 @@ npm run dev
 # terminal 1
 cd backend
 python -m uvicorn app.main:app --reload
-
 # terminal 2
 cd frontend
 npm run dev
