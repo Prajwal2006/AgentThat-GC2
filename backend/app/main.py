@@ -50,6 +50,9 @@ class Settings(BaseModel):
     azure_openai_temperature: float = Field(
         default_factory=lambda: float(os.getenv("AZURE_OPENAI_TEMPERATURE", "0.2"))
     )
+    azure_openai_timeout_seconds: float = Field(
+        default_factory=lambda: float(os.getenv("AZURE_OPENAI_TIMEOUT_SECONDS", "90"))
+    )
 
     @property
     def azure_openai_configured(self) -> bool:
@@ -690,12 +693,25 @@ async def _azure_chat_json(system_prompt: str, user_prompt: str) -> dict[str, An
         "api-key": settings.azure_openai_api_key or "",
         "Content-Type": "application/json",
     }
-    async with httpx.AsyncClient(timeout=45.0) as client:
-        response = await client.post(deployment_url, headers=headers, json=deployment_body)
+    response: httpx.Response
+    try:
+        async with httpx.AsyncClient(timeout=settings.azure_openai_timeout_seconds) as client:
+            response = await client.post(deployment_url, headers=headers, json=deployment_body)
 
-        # Some Azure AI Foundry configurations use the v1 OpenAI path with model routing.
-        if response.status_code == 404:
-            response = await client.post(v1_url, headers=headers, json=v1_body)
+            # Some Azure AI Foundry configurations use the v1 OpenAI path with model routing.
+            if response.status_code == 404:
+                response = await client.post(v1_url, headers=headers, json=v1_body)
+    except httpx.TimeoutException as exc:
+        raise HTTPException(
+            status_code=504,
+            detail=(
+                "Azure OpenAI timed out. "
+                f"Timeout={settings.azure_openai_timeout_seconds}s. "
+                "Try increasing AZURE_OPENAI_TIMEOUT_SECONDS, or retry with a shorter prompt."
+            ),
+        ) from exc
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Azure OpenAI network error: {str(exc)}") from exc
 
     if response.status_code >= 400:
         if response.status_code == 404:
@@ -713,7 +729,10 @@ async def _azure_chat_json(system_prompt: str, user_prompt: str) -> dict[str, An
         raise HTTPException(status_code=502, detail=f"Azure OpenAI error: {response.text}")
 
     data = response.json()
-    content = data["choices"][0]["message"]["content"]
+    try:
+        content = data["choices"][0]["message"]["content"]
+    except (KeyError, IndexError, TypeError) as exc:
+        raise HTTPException(status_code=502, detail=f"Azure OpenAI returned unexpected response shape: {data}") from exc
     try:
         return json.loads(content)
     except json.JSONDecodeError as exc:
@@ -951,12 +970,16 @@ async def improve_prompt(payload: ImprovePromptRequest) -> ImprovePromptResponse
         "You are AgentThat's enterprise prompt improvement engine. "
         "Return strict JSON with original_prompt, improved_prompt, and improvements array."
     )
-    data = await _azure_chat_json(
-        system_prompt,
-        json.dumps(payload.model_dump(), ensure_ascii=True),
-    )
-    data["provider"] = "azure_openai"
-    return ImprovePromptResponse.model_validate(data)
+    try:
+        data = await _azure_chat_json(
+            system_prompt,
+            json.dumps(payload.model_dump(), ensure_ascii=True),
+        )
+        data["provider"] = "azure_openai"
+        return ImprovePromptResponse.model_validate(data)
+    except (HTTPException, ValueError):
+        # Keep product usable when provider has transient or schema issues.
+        return _fallback_improve_prompt(payload.prompt, payload.business_context)
 
 
 @app.post("/v1/solutions/generate", response_model=GeneratedSolution)
@@ -972,18 +995,30 @@ async def generate_solution(payload: GenerateSolutionRequest) -> GeneratedSoluti
         "workflow[{id,name,agent,action,human_approval}], integrations[], governance[], "
         "observability[], deployment{runtime,hosting,state,secrets}. Use ASCII only."
     )
-    data = await _azure_chat_json(
-        system_prompt,
-        json.dumps(
-            {
-                "request": payload.model_dump(),
-                "fallback_shape": fallback.model_dump(),
-            },
-            ensure_ascii=True,
-        ),
-    )
-    data["provider"] = "azure_openai"
-    return GeneratedSolution.model_validate(data)
+    request_context = {
+        "request": payload.model_dump(),
+        "required_fields": [
+            "id",
+            "name",
+            "summary",
+            "improved_prompt",
+            "agents",
+            "workflow",
+            "integrations",
+            "governance",
+            "observability",
+            "deployment",
+        ],
+    }
+    try:
+        data = await _azure_chat_json(
+            system_prompt,
+            json.dumps(request_context, ensure_ascii=True),
+        )
+        data["provider"] = "azure_openai"
+        return GeneratedSolution.model_validate(data)
+    except (HTTPException, ValueError):
+        return fallback
 
 
 @app.post("/v1/solutions/deploy")
@@ -1027,3 +1062,25 @@ def deploy_solution(payload: DeploySolutionRequest) -> dict[str, Any]:
         "agentsCreated": created_agents,
         "provider": solution.provider,
     }
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# New modular API routers (coexist with legacy endpoints above)
+# These will gradually replace the in-memory legacy endpoints.
+# ───────────────────────────────────────────────────────────────────────────────
+
+from app.api.v1.health import router as health_router
+from app.api.v1.audit import router as audit_router
+from app.api.v1.solutions import router as solutions_router
+from app.api.v1.agents import router as agents_v2_router
+from app.api.v1.workflows import router as workflows_v2_router
+from app.api.v1.prompts import router as prompts_router
+
+# Register new routers with /v2 prefix to avoid conflicts with legacy endpoints
+# Once frontend migrates, these become the primary /v1 endpoints
+app.include_router(health_router)
+app.include_router(audit_router)
+app.include_router(solutions_router)
+app.include_router(agents_v2_router)
+app.include_router(workflows_v2_router)
+app.include_router(prompts_router)
