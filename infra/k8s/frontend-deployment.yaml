@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agentthat-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: agentthat-frontend
+  template:
+    metadata:
+      labels:
+        app: agentthat-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: ghcr.io/prajwal2006/agentthat-frontend:latest
+          ports:
+            - containerPort: 3000
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agentthat-frontend
+spec:
+  selector:
+    app: agentthat-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000

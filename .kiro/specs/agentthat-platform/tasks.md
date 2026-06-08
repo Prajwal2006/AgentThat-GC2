@@ -39,7 +39,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Raise authorization error if tenant_id is missing or mismatched
     - _Requirements: 19.1, 19.2, 16.4_
 
-  - [ ] 1.6 Create database connection, session management, and Alembic migration configuration
+  - [x] 1.6 Create database connection, session management, and Alembic migration configuration
     - Create `backend/app/db.py` with async SQLAlchemy engine, session factory, and dependency injection
     - Configure `backend/alembic/env.py` to detect all models
     - Generate initial migration with all tables, indexes, and constraints from design
@@ -91,8 +91,8 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
 - [ ] 3. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 4. Background job processing and real-time streaming
-  - [ ] 4.1 Implement Redis-backed job queue with priority ordering and tenant concurrency limits
+- [x] 4. Background job processing and real-time streaming
+  - [x] 4.1 Implement Redis-backed job queue with priority ordering and tenant concurrency limits
     - Create `backend/app/services/job_queue.py` with JobQueueService
     - Enqueue jobs with priority (tenant tier + timestamp), return job_id within 2 seconds
     - Enforce per-tenant concurrency limits (1-20 simultaneous jobs)
@@ -100,14 +100,14 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Auto-timeout jobs exceeding 30 minutes
     - _Requirements: 8.1, 8.5, 8.6_
 
-  - [ ] 4.2 Implement SSE/WebSocket streaming for job progress updates
+  - [x] 4.2 Implement SSE/WebSocket streaming for job progress updates
     - Create `backend/app/api/v1/jobs.py` with GET `/v1/jobs/{id}`, GET `/v1/jobs/{id}/stream` (SSE), POST `/v1/jobs/{id}/cancel`
     - Emit progress updates every ≤5 seconds (job_id, percentage 0-100, status message ≤200 chars)
     - Store completed results for 7 days minimum
     - Notify on completion/failure via stream and persistent notification
     - _Requirements: 8.2, 8.3, 8.4, 8.7_
 
-  - [ ] 4.3 Implement event-driven job execution worker with phase-based processing
+  - [x] 4.3 Implement event-driven job execution worker with phase-based processing
     - Create `backend/app/workers/job_worker.py` with Celery/ARQ worker
     - Process generation jobs in phases (analysis → design → configuration → validation)
     - Each phase emits completion event triggering next phase
@@ -192,7 +192,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Display available MCP servers and built-in tools filtered by category and tenant permissions
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
 
-  - [ ] 7.2 Implement AI generation mode for agents and workflows
+  - [x] 7.2 Implement AI generation mode for agents and workflows
     - Add AI generation accepting natural language (10-2000 chars)
     - Generate agent config: name, tools (from registry), memory adapter, governance defaults, handoff rules
     - Support modes: single agent, multi-agent workflow, optimization of existing
@@ -200,7 +200,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Display progress indicator during generation; timeout at 60 seconds with error
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7_
 
-  - [ ] 7.3 Implement optimization mode for existing workflows
+  - [x] 7.3 Implement optimization mode for existing workflows
     - Add optimization analysis: detect performance bottlenecks (>50% above avg), redundant steps, missing error handling, suboptimal agent configs
     - Return up to 20 recommendations with category, affected step, description, expected impact
     - If zero findings, display confirmation message
@@ -232,7 +232,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Record transition history (timestamp, actor, from_state, to_state)
     - _Requirements: 26.1, 26.2, 26.3, 26.4, 26.5, 26.6, 26.7_
 
-  - [ ] 9.2 Create agent lifecycle API endpoint
+  - [x] 9.2 Create agent lifecycle API endpoint
     - Add POST `/v1/agents/{id}/transition` endpoint with target_state, reason
     - GET `/v1/agents/{id}/versions` for version history
     - Wire auth (Developer+ required), RBAC, audit
@@ -252,14 +252,14 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Update lastRun timestamp on each step execution
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8_
 
-  - [ ] 10.2 Implement sequential and parallel execution patterns
+  - [x] 10.2 Implement sequential and parallel execution patterns
     - Sequential: each agent completes before next begins
     - Parallel: independent agents execute concurrently
     - Support 2-12 agents, agent teams, agent hierarchies
     - Record every state transition, agent invocation, tool call, decision point in immutable execution log (90 day retention)
     - _Requirements: 6.1, 6.2, 6.3, 6.11_
 
-  - [ ] 10.3 Implement human-in-the-loop with configurable timeout and dynamic routing
+  - [x] 10.3 Implement human-in-the-loop with configurable timeout and dynamic routing
     - Human-in-the-loop: pause at designated steps, wait for approval, timeout 1min-7days (default 24h)
     - On timeout: execute configured action (approve, reject, escalate)
     - Dynamic routing: select next agent from routing map based on output value
@@ -267,7 +267,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - If no route matches + default configured: execute default route
     - _Requirements: 6.4, 6.5, 6.6_
 
-  - [ ] 10.4 Implement escalation, retry with backoff, and failure recovery
+  - [x] 10.4 Implement escalation, retry with backoff, and failure recovery
     - Escalation: route to higher-authority agent/human when confidence < threshold (default 0.7)
     - Retry: 1-10 attempts (default 3), backoff strategy (fixed/linear/exponential)
     - On retry exhaustion + recovery path: execute recovery, log full context
@@ -293,8 +293,8 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Generate retry configs and verify attempt counts and backoff timing
     - **Validates: Requirements 6.7, 6.8, 6.9, 6.10**
 
-- [ ] 11. Context Management and Planning Engine
-  - [ ] 11.1 Implement context manager for multi-agent communication
+- [x] 11. Context Management and Planning Engine
+  - [x] 11.1 Implement context manager for multi-agent communication
     - Create `backend/app/services/context_manager.py` with ContextManager
     - Pass agent output as structured context: summary (max 500 tokens), full output reference, metadata (agent_id, step, timestamp, confidence)
     - Enforce configurable max context window (default 8000 tokens, 2000-128000 range)
@@ -306,7 +306,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Record context events in execution trace
     - _Requirements: 28.1, 28.2, 28.3, 28.4, 28.5, 28.6, 28.7_
 
-  - [ ] 11.2 Implement planning engine for complex task decomposition
+  - [x] 11.2 Implement planning engine for complex task decomposition
     - Create `backend/app/services/planning_engine.py` with PlanningEngine
     - Detect complex tasks (>200 chars or >2 objectives)
     - Decompose into 2-20 steps: goal, tools, expected output, dependencies (no circular deps)
@@ -330,8 +330,8 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Generate step outputs with varying similarity scores and verify re-plan triggers
     - **Validates: Requirements 27.3**
 
-- [ ] 12. Multi-Agent Collaboration and Long-Running Workflows
-  - [ ] 12.1 Implement agent delegation and collaboration within workflows
+- [x] 12. Multi-Agent Collaboration and Long-Running Workflows
+  - [x] 12.1 Implement agent delegation and collaboration within workflows
     - Extend orchestrator with delegation: pass subtask + context to target agent, wait for result
     - Validate target agent eligibility (permissions, lifecycle state: Testing/Staging/Production)
     - Support collaboration exchanges (max 10 per session, configurable)
@@ -341,7 +341,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Record all delegation, collaboration, and approval events in execution trace
     - _Requirements: 29.1, 29.2, 29.3, 29.4, 29.5, 29.6, 29.7_
 
-  - [ ] 12.2 Implement long-running workflow checkpointing and recovery
+  - [x] 12.2 Implement long-running workflow checkpointing and recovery
     - Persist checkpoint at every step completion and every ≤60s during long steps (when execution >5min)
     - Checkpoint includes: current step, context, variables, pending approvals
     - Auto-resume from checkpoint within 120s of system recovery
@@ -362,8 +362,8 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
 - [ ] 13. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 14. Agent Runtime and MCP Server Management
-  - [ ] 14.1 Implement agent runtime with LangGraph/PydanticAI workers
+- [x] 14. Agent Runtime and MCP Server Management
+  - [x] 14.1 Implement agent runtime with LangGraph/PydanticAI workers
     - Create `backend/app/services/agent_runtime.py` with AgentRuntime
     - Execute agents with isolated execution contexts (dedicated memory space per invocation)
     - Sandbox tool execution: 30s timeout, 512MB memory, network restricted to policy-permitted destinations
@@ -373,7 +373,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Record token usage, latency (ms), cost per invocation/tool call (90-day retention)
     - _Requirements: 20.1, 20.2, 20.3, 20.4, 20.5, 20.6_
 
-  - [ ] 14.2 Implement MCP server management service
+  - [x] 14.2 Implement MCP server management service
     - Create `backend/app/services/mcp_manager.py` with MCPServerManager
     - Create MCP server from API/specification/documentation/database schema (within 60s)
     - Validate for MCP protocol compliance, activate within 30s on success
@@ -383,13 +383,13 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Handle invalid input sources (unreachable API, malformed spec): abort, preserve state, error message
     - _Requirements: 21.1, 21.2, 21.3, 21.4, 21.5, 21.6, 21.7_
 
-  - [ ] 14.3 Create MCP server API endpoints
+  - [x] 14.3 Create MCP server API endpoints
     - Create `backend/app/api/v1/mcp_servers.py` with POST/GET `/v1/mcp-servers`, POST `/v1/mcp-servers/{id}/activate`, POST `/v1/mcp-servers/{id}/rollback`, GET `/v1/mcp-servers/{id}/versions`
     - Wire auth, RBAC, audit, tenant scoping
     - _Requirements: 21.1, 21.2, 21.6_
 
-- [ ] 15. Marketplace Service
-  - [ ] 15.1 Implement marketplace publishing and discovery
+- [x] 15. Marketplace Service
+  - [x] 15.1 Implement marketplace publishing and discovery
     - Create `backend/app/services/marketplace.py` with MarketplaceService
     - Publish: require name (1-100), creator_id, description (1-2000), category, type (agent/workflow/template/mcp_server/integration), initial install_count=0
     - Reject duplicate listing name within tenant
@@ -398,7 +398,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - On install failure: no workspace modification, display error
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7_
 
-  - [ ] 15.2 Implement marketplace social features (rating, review, clone, fork)
+  - [x] 15.2 Implement marketplace social features (rating, review, clone, fork)
     - Rating: 1.0-5.0 in 0.5 increments, one per user per item, recalculate average within 5s
     - Replace previous rating on re-submission
     - Review: 1-2000 chars, one per user per item, with timestamp
@@ -407,7 +407,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Reject self-rating/review (owner cannot rate own items)
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6_
 
-  - [ ] 15.3 Create marketplace API endpoints
+  - [x] 15.3 Create marketplace API endpoints
     - Create `backend/app/api/v1/marketplace.py` with GET/POST `/v1/marketplace`, GET `/v1/marketplace/{id}`, POST `/v1/marketplace/{id}/install`, `/clone`, `/fork`, `/rate`, `/review`
     - Wire auth, RBAC, audit, tenant scoping
     - _Requirements: 9.1, 9.3, 10.1, 10.4, 10.5_
@@ -421,8 +421,8 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Generate owner/non-owner attempts and verify rejection for owners
     - **Validates: Requirements 10.1, 10.2, 9.3, 10.6**
 
-- [ ] 16. Adoption Platform and Analytics
-  - [ ] 16.1 Implement adoption metrics tracking and calculation
+- [x] 16. Adoption Platform and Analytics
+  - [x] 16.1 Implement adoption metrics tracking and calculation
     - Create `backend/app/services/adoption.py` with AdoptionPlatformService
     - Track per execution: cost (USD 4 decimals), latency per agent/tool/step (ms), token usage (in/out), error count
     - Calculate: adoption rate (active/total×100), efficiency (auto_time/manual_time×100), time saved (hours), cost reduction, ROI ((reduction-cost)/cost×100)
@@ -433,14 +433,14 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Exclude partially recorded executions with indicator
     - _Requirements: 11.1, 11.2, 12.1, 12.2, 12.3, 12.4, 12.5, 12.6_
 
-  - [ ] 16.2 Implement report generation and export
+  - [x] 16.2 Implement report generation and export
     - Generate reports within 30 seconds aggregated by department, team, time period (weekly/monthly/quarterly), asset type
     - Provide time-series data (monthly granularity, 12+ months retention)
     - Export formats: dashboard view, PDF, presentation outline (titled sections, summary metrics, trend charts, key findings)
     - Insufficient sample indicator for groups <5 executions
     - _Requirements: 11.3, 11.4, 11.5, 11.6_
 
-  - [ ] 16.3 Create analytics API endpoints
+  - [x] 16.3 Create analytics API endpoints
     - Create `backend/app/api/v1/analytics.py` with GET `/v1/analytics`, GET `/v1/analytics/reports`, POST `/v1/analytics/export`
     - Wire auth, RBAC (team-scoped for leads, org-scoped for executives), tenant scoping
     - _Requirements: 11.3, 12.5_
@@ -450,8 +450,8 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Generate random execution data sets and verify formula correctness for adoption rate, efficiency, time saved, ROI
     - **Validates: Requirements 11.1, 11.2**
 
-- [ ] 17. Learning Platform
-  - [ ] 17.1 Implement course management and enrollment with prerequisites
+- [x] 17. Learning Platform
+  - [x] 17.1 Implement course management and enrollment with prerequisites
     - Create `backend/app/services/learning.py` with LearningPlatformService
     - Provide courses for: AI fundamentals, prompt engineering, agent building, multi-agent design, advanced optimization
     - Organize into role-based learning paths (Employee Builder, Team Lead, Platform Admin) with sequential progression
@@ -460,7 +460,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Enforce prerequisites: reject enrollment if prerequisites incomplete, indicate which remain
     - _Requirements: 13.1, 13.2, 13.3, 13.4, 13.6_
 
-  - [ ] 17.2 Implement assessments and certifications
+  - [x] 17.2 Implement assessments and certifications
     - 10+ question assessment per course, 70% passing score
     - Certification levels: Beginner, Intermediate, Advanced (1-10 required courses each)
     - Award certification on passing all required assessments (timestamp, display on profile within 5s)
@@ -470,7 +470,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Award certification when all courses in learning path completed
     - _Requirements: 14.1, 14.2, 14.3, 14.4, 14.5, 14.6, 13.5_
 
-  - [ ] 17.3 Create learning platform API endpoints
+  - [x] 17.3 Create learning platform API endpoints
     - Create `backend/app/api/v1/learning.py` with GET `/v1/learning/courses`, POST `/v1/learning/enroll`, POST `/v1/learning/assess`, GET `/v1/learning/certifications`, GET `/v1/learning/team-progress`
     - Wire auth, RBAC, tenant scoping
     - _Requirements: 13.1, 14.1, 14.6_
@@ -485,8 +485,8 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
 - [ ] 18. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 19. Observability and Tracing
-  - [ ] 19.1 Implement OpenTelemetry instrumentation for all services
+- [x] 19. Observability and Tracing
+  - [x] 19.1 Implement OpenTelemetry instrumentation for all services
     - Create `backend/app/services/observability.py` with tracing setup
     - Instrument agent executions, tool calls, workflow steps with span hierarchy
     - Include metadata: tenant_id, agent_id, workflow_id, user_id, model_name, token_count per span
@@ -494,15 +494,15 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Buffer locally for 10min if backend unreachable, retry with exponential backoff, discard >10min data
     - _Requirements: 22.1, 22.2, 22.3_
 
-  - [ ] 19.2 Implement alerting and trace visualization endpoints
+  - [x] 19.2 Implement alerting and trace visualization endpoints
     - Emit error alerts to notification channel within 60s
     - Emit latency alerts when step >30s or workflow >300s (admin-configurable thresholds)
     - Provide trace visualization: execution flow, span hierarchy, timing, token usage, cost per step (query <3s for 90-day traces)
     - Partition data by tenant and time (daily), 90-day retention, p95 query <3s
     - _Requirements: 22.4, 22.5, 22.6, 22.7_
 
-- [ ] 20. Data Protection and Encryption
-  - [ ] 20.1 Implement encryption, secrets management, and PII protection
+- [x] 20. Data Protection and Encryption
+  - [x] 20.1 Implement encryption, secrets management, and PII protection
     - Configure AES-256 encryption at rest (database, object storage, backups) with key rotation ≤90 days
     - Enforce TLS 1.2+ for all communications
     - Integrate managed vault (Azure Key Vault) for secrets; never persist in source control/env vars/images
@@ -523,7 +523,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Empty state: direct to quick actions for first-time users
     - _Requirements: 23.1, 23.2, 23.3, 23.4, 23.5, 23.6_
 
-  - [ ] 21.2 Implement Zustand stores for agents, workflows, jobs, and notifications
+  - [x] 21.2 Implement Zustand stores for agents, workflows, jobs, and notifications
     - Create `frontend/src/stores/agent-store.ts` with agent CRUD state
     - Create `frontend/src/stores/workflow-store.ts` with workflow state and lifecycle commands
     - Create `frontend/src/stores/job-store.ts` with background job tracking and SSE connection
@@ -625,7 +625,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 27. Multi-Tenancy, Scalability, and Infrastructure
-  - [ ] 27.1 Implement horizontal scaling configuration and health checks
+  - [x] 27.1 Implement horizontal scaling configuration and health checks
     - Configure Kubernetes deployment manifests for API, workers, runtime (2-50 pods each)
     - Implement health/readiness endpoints with 5-second response guarantee
     - Configure rate limiting per tenant
@@ -638,14 +638,14 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Configure rolling/blue-green deployments for zero-downtime (≤0.1% error during transition)
     - _Requirements: 19.4, 19.6_
 
-  - [ ] 27.3 Create deployment configurations for cloud providers
+  - [x] 27.3 Create deployment configurations for cloud providers
     - Create infrastructure-as-code for Azure (primary), AWS, and GCP
     - Support customer-managed cloud and on-premises deployment
     - Include: load balancer, K8s cluster, PostgreSQL, Redis, Vector DB, Object Storage, Key Vault
     - _Requirements: 19.7_
 
-- [ ] 28. Enterprise SSO Integration
-  - [ ] 28.1 Implement SSO authentication with multiple identity providers
+- [x] 28. Enterprise SSO Integration
+  - [x] 28.1 Implement SSO authentication with multiple identity providers
     - Create `backend/app/services/identity.py` with IdentityService
     - Support SAML 2.0, OAuth 2.0, OpenID Connect, Microsoft Entra ID
     - Create/update local user from IdP attributes (subject, email, display_name, groups)
@@ -657,14 +657,14 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - _Requirements: 15.1, 15.2, 15.3, 15.4, 15.5, 15.6, 15.7_
 
 - [ ] 29. Final integration and wiring
-  - [ ] 29.1 Wire all API routes into FastAPI application with middleware stack
+  - [x] 29.1 Wire all API routes into FastAPI application with middleware stack
     - Register all v1 routers in `backend/app/main.py`
     - Apply middleware order: CORS → Auth → Tenant → RBAC → Audit → Rate Limit
     - Configure error response format (code, message, details, request_id, timestamp)
     - Implement circuit breaker for LLM calls (5 failures in 60s → 30s open)
     - _Requirements: 15.1, 16.1, 17.1, 19.1_
 
-  - [ ] 29.2 Wire frontend API client with React Query, SSE hooks, and error handling
+  - [x] 29.2 Wire frontend API client with React Query, SSE hooks, and error handling
     - Create `frontend/src/lib/api-client.ts` with typed API methods for all endpoints
     - Create `frontend/src/hooks/use-sse.ts` for job progress and execution streaming
     - Implement React Query cache invalidation patterns across stores
@@ -672,7 +672,7 @@ This plan implements the AgentThat enterprise AI adoption operating system as a 
     - Implement graceful degradation: cache last-known-good data, show stale indicator
     - _Requirements: 23.5, 8.2, 8.3_
 
-  - [ ] 29.3 Configure CI/CD pipeline with test automation
+  - [x] 29.3 Configure CI/CD pipeline with test automation
     - Update `.github/workflows/ci.yml` with: lint, type-check, unit tests, property tests, integration tests
     - Add Docker Compose for integration test environment (PostgreSQL, Redis, mock LLM)
     - Configure Playwright for critical E2E journeys

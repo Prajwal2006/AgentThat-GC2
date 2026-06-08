@@ -194,6 +194,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
     headers: {
       "Content-Type": "application/json",
+      // Dev auth headers for local development (backend accepts these in dev mode)
+      "X-Dev-User-Id": "00000000-0000-0000-0000-000000000001",
+      "X-Dev-Tenant-Id": "00000000-0000-0000-0000-000000000001",
+      "X-Dev-Email": "dev@agentthat.io",
+      "X-Dev-Name": "Dev User",
+      "X-Dev-Role": "Admin",
       ...(init?.headers ?? {}),
     },
   });

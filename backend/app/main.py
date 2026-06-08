@@ -65,7 +65,7 @@ class Settings(BaseModel):
 
 settings = Settings()
 
-app = FastAPI(title="AgentThat Backend", version="0.2.0")
+app = FastAPI(title="AgentThat Backend", version="0.3.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
@@ -74,6 +74,35 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ─── Register modular API routers (v1/v2 endpoints) ───────────────────────────
+from app.api.v1.health import router as health_router  # noqa: E402
+from app.api.v1.agents import router as agents_router  # noqa: E402
+from app.api.v1.workflows import router as workflows_router  # noqa: E402
+from app.api.v1.audit import router as audit_router  # noqa: E402
+from app.api.v1.prompts import router as prompts_router  # noqa: E402
+from app.api.v1.solutions import router as solutions_router  # noqa: E402
+from app.api.v1.jobs import router as jobs_router  # noqa: E402
+from app.api.v1.marketplace import router as marketplace_router  # noqa: E402
+from app.api.v1.analytics import router as analytics_router  # noqa: E402
+from app.api.v1.learning import router as learning_router  # noqa: E402
+from app.api.v1.mcp_servers import router as mcp_servers_router  # noqa: E402
+from app.api.v1.executions import router as executions_router  # noqa: E402
+from app.api.v1.lifecycle import router as lifecycle_router  # noqa: E402
+
+app.include_router(health_router)
+app.include_router(agents_router)
+app.include_router(workflows_router)
+app.include_router(audit_router)
+app.include_router(prompts_router)
+app.include_router(solutions_router)
+app.include_router(jobs_router)
+app.include_router(marketplace_router)
+app.include_router(analytics_router)
+app.include_router(learning_router)
+app.include_router(mcp_servers_router)
+app.include_router(executions_router)
+app.include_router(lifecycle_router)
 
 
 class ImprovePromptRequest(BaseModel):

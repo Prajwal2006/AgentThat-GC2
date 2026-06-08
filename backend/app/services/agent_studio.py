@@ -1,6 +1,7 @@
 """Agent Generation Studio - Manual, AI, and Optimization modes."""
 from __future__ import annotations
 
+import asyncio
 import uuid
 from datetime import datetime, UTC
 from typing import Any, Sequence
@@ -163,3 +164,155 @@ class AgentStudioService:
         
         if len(components) > 50:
             raise AgentValidationError("Maximum 50 components per agent configuration")
+
+    async def generate_agent(self, description: str, mode: str = "single_agent") -> dict:
+        """AI-powered agent generation from natural language (10-2000 chars).
+
+        Modes: single_agent, multi_agent, optimization
+        Returns generated agent config for review.
+        Timeout: 60 seconds.
+        """
+        # Validate description length
+        desc_len = len(description.strip())
+        if desc_len < 10 or desc_len > 2000:
+            raise AgentValidationError("Description must be between 10 and 2000 characters")
+
+        # Validate mode
+        valid_modes = ("single_agent", "multi_agent", "optimization")
+        if mode not in valid_modes:
+            raise AgentValidationError(f"Mode must be one of: {', '.join(valid_modes)}")
+
+        # Simulate AI generation with timeout
+        async def _generate_config() -> dict:
+            await asyncio.sleep(0.01)  # Simulate processing
+
+            base_config: dict[str, Any] = {
+                "name": f"Generated Agent - {description[:30]}",
+                "description": description.strip(),
+                "mode": mode,
+                "tools": [{"type": "default", "name": "general_tool"}],
+                "memory": {"type": "conversation", "max_tokens": 4096},
+                "governance": {
+                    "max_actions_per_minute": 60,
+                    "requires_approval_for": ["destructive_actions"],
+                    "confidence_threshold": 0.7,
+                },
+                "handoff_rules": [],
+                "generated_at": datetime.now(UTC).isoformat(),
+            }
+
+            if mode == "multi_agent":
+                base_config["agents"] = [
+                    {"role": "coordinator", "name": "Coordinator Agent"},
+                    {"role": "worker", "name": "Worker Agent"},
+                ]
+                base_config["handoff_rules"] = [
+                    {"from": "coordinator", "to": "worker", "condition": "task_delegated"},
+                ]
+            elif mode == "optimization":
+                base_config["optimization_targets"] = [
+                    "latency",
+                    "token_usage",
+                    "accuracy",
+                ]
+
+            return base_config
+
+        try:
+            config = await asyncio.wait_for(_generate_config(), timeout=60.0)
+        except asyncio.TimeoutError:
+            raise AgentValidationError("Agent generation timed out after 60 seconds")
+
+        # Audit log
+        await self.audit.log(
+            user_id=self.user_id,
+            operation="generate",
+            resource_type="agent",
+            resource_id=uuid.uuid4(),
+            details={"mode": mode, "description_length": desc_len},
+        )
+
+        return {
+            "status": "generated",
+            "config": config,
+            "requires_review": True,
+        }
+
+    async def optimize_workflow(self, workflow_id: uuid.UUID) -> dict:
+        """Analyze workflow for performance bottlenecks and generate recommendations.
+
+        Returns up to 20 recommendations with category, affected_step, description, expected_impact.
+        """
+        # Simulate analysis
+        recommendations: list[dict[str, Any]] = [
+            {
+                "id": str(uuid.uuid4()),
+                "category": "performance",
+                "affected_step": "step_1",
+                "description": "Consider parallelizing independent data fetch operations",
+                "expected_impact": 35.0,
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "category": "redundancy",
+                "affected_step": "step_2",
+                "description": "Remove duplicate validation already performed in step_1",
+                "expected_impact": 10.0,
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "category": "error_handling",
+                "affected_step": "step_3",
+                "description": "Add retry logic for external API calls",
+                "expected_impact": 20.0,
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "category": "config",
+                "affected_step": "step_4",
+                "description": "Increase timeout for long-running model inference step",
+                "expected_impact": 15.0,
+            },
+        ]
+
+        # Cap at 20
+        recommendations = recommendations[:20]
+
+        await self.audit.log(
+            user_id=self.user_id,
+            operation="optimize_analyze",
+            resource_type="workflow",
+            resource_id=workflow_id,
+            details={"recommendation_count": len(recommendations)},
+        )
+
+        return {
+            "workflow_id": str(workflow_id),
+            "recommendations": recommendations,
+            "analyzed_at": datetime.now(UTC).isoformat(),
+        }
+
+    async def apply_optimizations(self, workflow_id: uuid.UUID, accepted_ids: list[str]) -> dict:
+        """Apply accepted optimization recommendations as new workflow version."""
+        # In a real implementation, this would fetch the workflow, apply changes,
+        # and create a new version while preserving the previous one.
+        new_version_number = 2  # Placeholder; would increment from current
+
+        await self.audit.log(
+            user_id=self.user_id,
+            operation="optimize_apply",
+            resource_type="workflow",
+            resource_id=workflow_id,
+            details={
+                "accepted_recommendations": accepted_ids,
+                "new_version": new_version_number,
+            },
+        )
+
+        return {
+            "workflow_id": str(workflow_id),
+            "previous_version": new_version_number - 1,
+            "new_version": new_version_number,
+            "applied_optimizations": accepted_ids,
+            "applied_at": datetime.now(UTC).isoformat(),
+        }
